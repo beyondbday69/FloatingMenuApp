@@ -10,8 +10,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class FloatingMenuService extends Service {
     private WindowManager mWindowManager;
@@ -102,16 +104,13 @@ public class FloatingMenuService extends Service {
         View header = mFloatingView.findViewById(R.id.header);
         header.setOnTouchListener(dragListener);
 
-        // Minimize Button
-        mFloatingView.findViewById(R.id.btn_minimize).setOnClickListener(v -> {
+        // Close Button (Now Minimizes)
+        mFloatingView.findViewById(R.id.btn_close).setOnClickListener(v -> {
             expandedView.setVisibility(View.GONE);
             collapsedView.setVisibility(View.VISIBLE);
         });
 
-        // Close Button (completely kill)
-        mFloatingView.findViewById(R.id.btn_close).setOnClickListener(v -> stopSelf());
-
-        // Accordion functionality
+        // Accordion functionality Category 1
         View tvCategory1 = mFloatingView.findViewById(R.id.tv_category1);
         View containerCategory1 = mFloatingView.findViewById(R.id.container_category1);
         tvCategory1.setOnClickListener(v -> {
@@ -119,11 +118,20 @@ public class FloatingMenuService extends Service {
             containerCategory1.setVisibility(isVisible ? View.GONE : View.VISIBLE);
         });
 
+        // Accordion functionality Category 2
         View tvCategory2 = mFloatingView.findViewById(R.id.tv_category2);
         View containerCategory2 = mFloatingView.findViewById(R.id.container_category2);
         tvCategory2.setOnClickListener(v -> {
             boolean isVisible = containerCategory2.getVisibility() == View.VISIBLE;
             containerCategory2.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+        });
+
+        // Accordion functionality Category 3 (Lua Scripts)
+        View tvCategory3 = mFloatingView.findViewById(R.id.tv_category3);
+        View containerCategory3 = mFloatingView.findViewById(R.id.container_category3);
+        tvCategory3.setOnClickListener(v -> {
+            boolean isVisible = containerCategory3.getVisibility() == View.VISIBLE;
+            containerCategory3.setVisibility(isVisible ? View.GONE : View.VISIBLE);
         });
 
         // Sliders
@@ -148,6 +156,22 @@ public class FloatingMenuService extends Service {
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+
+        // Lua Script Buttons
+        setupLuaButton(R.id.btn_script_1, "1.lua executed");
+        setupLuaButton(R.id.btn_script_2, "2.lua executed");
+        setupLuaButton(R.id.btn_script_3, "3.lua executed");
+        setupLuaButton(R.id.btn_script_4, "4.lua executed");
+        setupLuaButton(R.id.btn_script_5, "5.lua executed");
+        setupLuaButton(R.id.btn_script_6, "6.lua executed");
+        setupLuaButton(R.id.btn_script_apply, "apply_skins.lua executed");
+    }
+
+    private void setupLuaButton(int buttonId, final String message) {
+        Button btn = mFloatingView.findViewById(buttonId);
+        if (btn != null) {
+            btn.setOnClickListener(v -> Toast.makeText(FloatingMenuService.this, message, Toast.LENGTH_SHORT).show());
+        }
     }
 
     @Override

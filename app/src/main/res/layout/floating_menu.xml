@@ -46,19 +46,7 @@
                 android:textColor="@color/white"
                 android:textStyle="bold" />
 
-            <!-- Minimize Button -->
-            <Button
-                android:id="@+id/btn_minimize"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:padding="4dp"
-                android:text="_"
-                android:textColor="@color/white"
-                android:background="@android:color/transparent"/>
-            
-            <!-- Close Button -->
+            <!-- Close Button (Now Minimizes) -->
             <Button
                 android:id="@+id/btn_close"
                 android:layout_width="wrap_content"
@@ -82,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Expandable Section 1 -->
+                <!-- Expandable Section 1: Options -->
                 <TextView
                     android:id="@+id/tv_category1"
                     android:layout_width="match_parent"
@@ -113,7 +101,7 @@
                         android:textColor="@color/white"/>
                 </LinearLayout>
 
-                <!-- Expandable Section 2 -->
+                <!-- Expandable Section 2: Sliders -->
                 <TextView
                     android:id="@+id/tv_category2"
                     android:layout_width="match_parent"
@@ -157,6 +145,68 @@
                         android:layout_height="wrap_content"
                         android:max="100"
                         android:progress="20"/>
+                </LinearLayout>
+                
+                <!-- Expandable Section 3: Lua Scripts / Skins -->
+                <TextView
+                    android:id="@+id/tv_category3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#444444"
+                    android:padding="10dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Skins / Lua Scripts"
+                    android:textColor="@color/accent"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/container_category3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="gone">
+                    <Button
+                        android:id="@+id/btn_script_1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute 1.lua"
+                        android:layout_marginBottom="4dp"/>
+                    <Button
+                        android:id="@+id/btn_script_2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute 2.lua"
+                        android:layout_marginBottom="4dp"/>
+                    <Button
+                        android:id="@+id/btn_script_3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute 3.lua"
+                        android:layout_marginBottom="4dp"/>
+                    <Button
+                        android:id="@+id/btn_script_4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute 4.lua"
+                        android:layout_marginBottom="4dp"/>
+                    <Button
+                        android:id="@+id/btn_script_5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute 5.lua"
+                        android:layout_marginBottom="4dp"/>
+                    <Button
+                        android:id="@+id/btn_script_6"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute 6.lua"
+                        android:layout_marginBottom="4dp"/>
+                    <Button
+                        android:id="@+id/btn_script_apply"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Execute apply_skins.lua"/>
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
