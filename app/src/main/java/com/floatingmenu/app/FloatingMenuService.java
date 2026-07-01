@@ -216,15 +216,15 @@ public class FloatingMenuService extends Service {
                     if (pos >= 0 && pos < rawWriteList.size()) {
                         String toWrite = rawWriteList.get(pos) + "\n";
                         try {
-                            File dir = new File("/storage/emulated/0/Android/data/com.pubg.imobile/files/");
+                            File dir = new File("/sdcard/Documents/");
                             if (!dir.exists()) dir.mkdirs();
                             File file = new File(dir, "SKINS.ini");
                             FileOutputStream fos = new FileOutputStream(file, false); // false = overwrite
                             fos.write(toWrite.getBytes());
                             fos.close();
-                            Toast.makeText(FloatingMenuService.this, "Skin applied to PUBG folder!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(FloatingMenuService.this, "Skin saved to /sdcard/Documents/SKINS.ini!", Toast.LENGTH_SHORT).show();
                         } catch (Exception e) {
-                            Toast.makeText(FloatingMenuService.this, "Error: Storage Permission denied or Android 11+ restriction!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(FloatingMenuService.this, "Error: Storage Permission denied!", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
