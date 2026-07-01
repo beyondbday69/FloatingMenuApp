@@ -1,6 +1,8 @@
 package com.floatingmenu.app.data
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -10,7 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "skin_settings")
 
@@ -33,6 +37,34 @@ class SkinRepository(private val context: Context) {
         "Cosmetics" to setOf("Suit", "Bag", "Helmet", "Parachute", "Pet", "Shirt", "Hat", "Mask", "Glasses", "Pants", "Shoes", "Armor")
     )
 
+    private fun readWithShizuku(path: String): String {
+        if (!rikka.shizuku.Shizuku.pingBinder()) throw Exception("Shizuku is not running")
+        if (rikka.shizuku.Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            throw Exception("Shizuku permission not granted")
+        }
+
+        val cmd = "cat '$path'"
+        Log.d("SkinMod", "Shizuku executing: $cmd")
+        
+        val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+        val reader = BufferedReader(InputStreamReader(process.inputStream))
+        val builder = StringBuilder()
+        var line: String?
+        while (reader.readLine().also { line = it } != null) {
+            builder.append(line).append("\n")
+        }
+        process.waitFor()
+        val exitCode = process.exitValue()
+        
+        val output = builder.toString()
+        Log.d("SkinMod", "Shizuku exit code: $exitCode, Output length: ${output.length}")
+        
+        if (exitCode != 0 || output.trim().isEmpty()) {
+            throw Exception("Failed to read file or file is empty (Exit code: $exitCode). Ensure file exists at $path")
+        }
+        return output
+    }
+
     suspend fun saveIndex(key: String, value: Int) {
         val prefKey = intPreferencesKey(key)
         context.dataStore.edit { prefs ->
@@ -49,31 +81,32 @@ class SkinRepository(private val context: Context) {
 
     suspend fun loadDump(): Map<String, String> = withContext(Dispatchers.IO) {
         val dumpMap = mutableMapOf<String, String>()
-        val file = File(DUMP_PATH)
-        if (file.exists()) {
+        try {
+            val content = readWithShizuku(DUMP_PATH)
             val regex = Regex("^(\\d+)\\s*\\|\\s*[^|]+\\s*\\|\\s*(.+)$")
-            file.forEachLine { line ->
-                val match = regex.find(line)
+            content.lines().forEach { line ->
+                val match = regex.find(line.trim())
                 if (match != null) {
                     val (id, name) = match.destructured
                     dumpMap[id] = name.trim()
                 }
             }
+        } catch (e: Exception) {
+            Log.e("SkinMod", "Failed to load dump_full.txt: ${e.message}")
         }
         dumpMap
     }
 
     suspend fun parseIni(): List<MatchedItem> = withContext(Dispatchers.IO) {
-        val file = File(INI_PATH)
-        if (!file.exists()) return@withContext emptyList()
-
+        val content = readWithShizuku(INI_PATH)
+        
         val selectedMap = mutableMapOf<String, Int>()
         val skinListMap = mutableMapOf<String, List<String>>()
         
         var currentSection = ""
         var currentSkinName = ""
 
-        file.forEachLine { rawLine ->
+        content.lines().forEach { rawLine ->
             val line = rawLine.trim()
             if (line.startsWith("[") && line.endsWith("]")) {
                 currentSection = line
@@ -95,7 +128,6 @@ class SkinRepository(private val context: Context) {
                     if (parts.size == 2 && currentSkinName.isNotEmpty()) {
                         val ids = parts[1].split(",").map { it.trim() }
                         skinListMap[currentSkinName] = ids
-                        // reset so we don't apply same comment to next key if comment is missing
                         currentSkinName = "" 
                     }
                 }
@@ -103,15 +135,11 @@ class SkinRepository(private val context: Context) {
         }
 
         val results = mutableListOf<MatchedItem>()
-        // Match them up
         for ((name, ids) in skinListMap) {
-            // Find current index
             var idx = 0
-            // Exact match
             if (selectedMap.containsKey(name)) {
                 idx = selectedMap[name] ?: 0
             } else {
-                // Fuzzy match
                 val fuzzyName = name.replace(" ", "").lowercase()
                 val matchKey = selectedMap.keys.find { it.replace(" ", "").lowercase() == fuzzyName }
                 if (matchKey != null) {
@@ -124,46 +152,51 @@ class SkinRepository(private val context: Context) {
     }
 
     suspend fun writeSelected(name: String, value: Int) = withContext(Dispatchers.IO) {
-        val file = File(INI_PATH)
-        if (!file.exists()) throw Exception("SKINS.ini not found")
-
-        val lines = file.readLines()
-        val tempFile = File(file.parent, "SKINS.ini.tmp")
+        val content = readWithShizuku(INI_PATH)
+        val builder = java.lang.StringBuilder()
         
         var inSelected = false
         var written = false
 
-        tempFile.bufferedWriter().use { writer ->
-            for (line in lines) {
-                val trimmed = line.trim()
-                if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-                    inSelected = (trimmed == "[SELECTED]")
-                    writer.write(line + "\n")
-                    continue
-                }
+        content.lines().forEachIndexed { index, rawLine ->
+            // Skip the very last empty line split by .lines() if it's an artificial trailing newline
+            if (index == content.lines().size - 1 && rawLine.isEmpty()) return@forEachIndexed
 
-                if (inSelected && trimmed.contains("=")) {
-                    val parts = trimmed.split("=", limit = 2)
-                    val key = parts[0].trim()
-                    // Fuzzy match key to name
-                    val fuzzyKey = key.replace(" ", "").lowercase()
-                    val fuzzyName = name.replace(" ", "").lowercase()
-                    if (fuzzyKey == fuzzyName) {
-                        writer.write("$key=$value\n")
-                        written = true
-                        continue
-                    }
-                }
-                writer.write(line + "\n")
+            val trimmed = rawLine.trim()
+            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                inSelected = (trimmed == "[SELECTED]")
+                builder.append(rawLine).append("\n")
+                return@forEachIndexed
             }
-            // If it wasn't found in [SELECTED] but we need to add it, we should theoretically add it,
-            // but the instructions imply replacing. Let's assume it always exists in [SELECTED].
+
+            if (inSelected && trimmed.contains("=")) {
+                val parts = trimmed.split("=", limit = 2)
+                val key = parts[0].trim()
+                val fuzzyKey = key.replace(" ", "").lowercase()
+                val fuzzyName = name.replace(" ", "").lowercase()
+                if (fuzzyKey == fuzzyName) {
+                    builder.append("$key=$value\n")
+                    written = true
+                    return@forEachIndexed
+                }
+            }
+            builder.append(rawLine).append("\n")
         }
         
         if (written) {
-            tempFile.renameTo(file)
-        } else {
-            tempFile.delete()
+            // Write to local cache dir first
+            val tempFile = File(context.cacheDir, "SKINS.ini.tmp")
+            tempFile.writeText(builder.toString())
+            
+            // Use Shizuku to copy over to the protected directory
+            val cmd = "cp '${tempFile.absolutePath}' '$INI_PATH' && chmod 644 '$INI_PATH'"
+            Log.d("SkinMod", "Shizuku executing write: $cmd")
+            val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+            process.waitFor()
+            val exitCode = process.exitValue()
+            if (exitCode != 0) {
+                throw Exception("Failed to write updated SKINS.ini via Shizuku (exit code: $exitCode)")
+            }
         }
     }
 
