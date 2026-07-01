@@ -17,8 +17,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FloatingMenuService extends Service {
     private WindowManager mWindowManager;
@@ -165,18 +169,43 @@ public class FloatingMenuService extends Service {
         // Skin Selector Spinner
         Spinner spinnerSkins = mFloatingView.findViewById(R.id.spinner_skins);
         if (spinnerSkins != null) {
-            String[] skins = {
-                "M416 Glacier|M416=101004008",
-                "AKM Hellfire|AKM=101001005",
-                "AWM Godzilla|AWM=103003009",
-                "UAZ Aegis|UAZ_1908001=190800101"
-            };
-            String[] displaySkins = new String[skins.length];
-            for (int i = 0; i < skins.length; i++) {
-                displaySkins[i] = skins[i].split("\\|")[0];
+            List<String> displaySkinsList = new ArrayList<>();
+            List<String> rawWriteList = new ArrayList<>();
+            File skinsFile = new File("/sdcard/skins_list.ini");
+            
+            if (skinsFile.exists()) {
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(skinsFile));
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        int eqIdx = line.indexOf('=');
+                        if (eqIdx != -1) {
+                            displaySkinsList.add(line.substring(0, eqIdx).trim());
+                            rawWriteList.add(line.substring(eqIdx + 1).trim());
+                        }
+                    }
+                    br.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, displaySkins);
+            if (displaySkinsList.isEmpty()) {
+                // Defaults if file not found or empty
+                String[] defaults = {
+                    "M416 Glacier|M416=101004008",
+                    "AKM Hellfire|AKM=101001005",
+                    "AWM Godzilla|AWM=103003009",
+                    "UAZ Aegis|UAZ_1908001=190800101"
+                };
+                for (String d : defaults) {
+                    String[] parts = d.split("\\|");
+                    displaySkinsList.add(parts[0]);
+                    rawWriteList.add(parts[1]);
+                }
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, displaySkinsList);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerSkins.setAdapter(adapter);
 
@@ -184,13 +213,13 @@ public class FloatingMenuService extends Service {
             if (btnApplySkins != null) {
                 btnApplySkins.setOnClickListener(v -> {
                     int pos = spinnerSkins.getSelectedItemPosition();
-                    if (pos >= 0 && pos < skins.length) {
-                        String toWrite = skins[pos].split("\\|")[1] + "\n";
+                    if (pos >= 0 && pos < rawWriteList.size()) {
+                        String toWrite = rawWriteList.get(pos) + "\n";
                         try {
                             File dir = new File("/sdcard/");
                             if (!dir.exists()) dir.mkdirs();
                             File file = new File(dir, "SKINS.ini");
-                            FileOutputStream fos = new FileOutputStream(file, false); // false = overwrite to only apply 1 skin at a time
+                            FileOutputStream fos = new FileOutputStream(file, false); // false = overwrite
                             fos.write(toWrite.getBytes());
                             fos.close();
                             Toast.makeText(FloatingMenuService.this, "Skin applied to /sdcard/SKINS.ini!", Toast.LENGTH_SHORT).show();
