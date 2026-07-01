@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         
-        <service android:name=".FloatingMenuService"
+        <service android:name=".ComposeFloatingMenuService"
                  android:exported="false" />
 
         <provider
