@@ -205,8 +205,8 @@ public class FloatingMenuService extends Service {
                 }
             }
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.mc_spinner_item, displaySkinsList);
-            adapter.setDropDownViewResource(R.layout.mc_spinner_item);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, displaySkinsList);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerSkins.setAdapter(adapter);
 
             Button btnApplySkins = mFloatingView.findViewById(R.id.btn_apply_skins);
