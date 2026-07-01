@@ -57,7 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void executeShizukuTest() {
         try {
-            Shizuku.newProcess(new String[]{"sh", "-c", "ls -l /sdcard/Android/data/com.pubg.imobile"}, null, null).waitFor();
+            Process process = rikka.shizuku.Shizuku.newProcess(new String[]{"sh", "-c", "ls -l /sdcard/Android/data/com.pubg.imobile"}, null, null);
+            process.waitFor();
             Toast.makeText(this, "Shizuku works! It can see inside com.pubg.imobile folder.", Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Toast.makeText(this, "Shizuku failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
