@@ -196,8 +196,8 @@ class SkinRepository(private val context: Context) {
             val tempFile = File(context.getExternalFilesDir(null), "SKINS.ini.tmp")
             tempFile.writeText(builder.toString())
             
-            // Use Shizuku to copy over to the protected directory
-            val cmd = "cp '${tempFile.absolutePath}' '$INI_PATH' && chmod 644 '$INI_PATH'"
+            // Use Shizuku to copy over to the protected directory. Do not chmod, as ADB shell cannot chmod SELinux protected files.
+            val cmd = "cp '${tempFile.absolutePath}' '$INI_PATH'"
             Log.d("SkinMod", "Shizuku executing write: $cmd")
             val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
             
