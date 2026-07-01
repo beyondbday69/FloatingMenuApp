@@ -56,6 +56,7 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     private lateinit var viewModel: SkinViewModel
     private lateinit var sukunaViewModel: SukunaViewModel
+    private lateinit var fovView: ComposeView
 
     override fun onCreate() {
         super.onCreate()
@@ -115,6 +116,39 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
         }
 
         windowManager.addView(composeView, params)
+        
+        // Add FOV Circle Overlay
+        val fovParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            layoutFlag,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.CENTER
+        }
+        
+        val fovView = ComposeView(this).apply {
+            setViewTreeLifecycleOwner(this@ComposeFloatingMenuService)
+            setViewTreeViewModelStoreOwner(this@ComposeFloatingMenuService)
+            setViewTreeSavedStateRegistryOwner(this@ComposeFloatingMenuService)
+            setContent {
+                val state by sukunaViewModel.uiState.collectAsState()
+                if (state.ESP_ON) { // Only show FOV when ESP is enabled
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .size(250.dp) // FOV size
+                                .border(2.dp, Color.Green, CircleShape)
+                        )
+                    }
+                }
+            }
+        }
+        windowManager.addView(fovView, fovParams)
+        // Store view so it can be destroyed
+        this.fovView = fovView
+        
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
@@ -125,6 +159,9 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
         store.clear()
         if (::composeView.isInitialized) {
             windowManager.removeView(composeView)
+        }
+        if (::fovView.isInitialized) {
+            windowManager.removeView(fovView)
         }
     }
 
