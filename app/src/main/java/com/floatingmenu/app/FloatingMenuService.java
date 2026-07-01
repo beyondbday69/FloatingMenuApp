@@ -157,20 +157,13 @@ public class FloatingMenuService extends Service {
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        // Lua Script Buttons
-        setupLuaButton(R.id.btn_script_1, "1.lua executed");
-        setupLuaButton(R.id.btn_script_2, "2.lua executed");
-        setupLuaButton(R.id.btn_script_3, "3.lua executed");
-        setupLuaButton(R.id.btn_script_4, "4.lua executed");
-        setupLuaButton(R.id.btn_script_5, "5.lua executed");
-        setupLuaButton(R.id.btn_script_6, "6.lua executed");
-        setupLuaButton(R.id.btn_script_apply, "apply_skins.lua executed");
-    }
-
-    private void setupLuaButton(int buttonId, final String message) {
-        Button btn = mFloatingView.findViewById(buttonId);
-        if (btn != null) {
-            btn.setOnClickListener(v -> Toast.makeText(FloatingMenuService.this, message, Toast.LENGTH_SHORT).show());
+        // Skin Apply Button
+        Button btnApplySkins = mFloatingView.findViewById(R.id.btn_apply_skins);
+        if (btnApplySkins != null) {
+            btnApplySkins.setOnClickListener(v -> {
+                // Here is where the skins logic will hook up in the future
+                Toast.makeText(FloatingMenuService.this, "Skins applied successfully!", Toast.LENGTH_SHORT).show();
+            });
         }
     }
 
