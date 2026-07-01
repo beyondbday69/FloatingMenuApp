@@ -17,71 +17,83 @@
             android:layout_centerInParent="true"
             android:text="M"
             android:textStyle="bold"
-            android:textColor="@color/white"
+            android:typeface="monospace"
+            android:textColor="#FFFFFF"
             android:textSize="24sp"/>
     </RelativeLayout>
 
     <!-- Expanded View (Full Menu) -->
     <LinearLayout
         android:id="@+id/expanded_view"
-        android:layout_width="300dp"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:background="@color/menu_bg"
+        android:background="@drawable/mc_panel_bg"
         android:orientation="vertical"
         android:animateLayoutChanges="true"
-        android:padding="8dp">
+        android:padding="4dp">
         
         <!-- Header for Dragging & Minimizing -->
         <LinearLayout
             android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#333333"
+            android:background="#888888"
             android:orientation="horizontal"
-            android:padding="12dp">
+            android:padding="8dp"
+            android:gravity="center_vertical">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Mod Menu"
-                android:textColor="@color/white"
+                android:text="Minecraft Mod Menu"
+                android:textColor="#FFFFFF"
+                android:shadowColor="#3F3F3F"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="1"
+                android:typeface="monospace"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <!-- Close Button (Now Minimizes) -->
             <Button
                 android:id="@+id/btn_close"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:padding="4dp"
+                android:padding="0dp"
                 android:text="X"
-                android:layout_marginLeft="8dp"
-                android:textColor="@color/white"
-                android:background="@android:color/transparent"/>
+                android:textSize="18sp"
+                android:typeface="monospace"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/mc_button_bg"/>
         </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="300dp"
             android:layout_marginTop="8dp">
             
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:animateLayoutChanges="true"
+                android:padding="8dp"
                 android:orientation="vertical">
 
                 <!-- Expandable Section 1: Options -->
-                <TextView
+                <Button
                     android:id="@+id/tv_category1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#444444"
-                    android:padding="10dp"
-                    android:text="Options (Click to Expand)"
-                    android:textColor="@color/accent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/mc_button_bg"
+                    android:text="Options"
+                    android:textAllCaps="false"
+                    android:typeface="monospace"
+                    android:textColor="#3F3F3F"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -95,25 +107,28 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="God Mode"
-                        android:textColor="@color/white"
+                        android:typeface="monospace"
+                        android:textColor="#3F3F3F"
                         android:layout_marginBottom="8dp"/>
                     <Switch
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Infinite Ammo"
-                        android:textColor="@color/white"/>
+                        android:typeface="monospace"
+                        android:textColor="#3F3F3F"/>
                 </LinearLayout>
 
                 <!-- Expandable Section 2: Sliders -->
-                <TextView
+                <Button
                     android:id="@+id/tv_category2"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#444444"
-                    android:padding="10dp"
+                    android:layout_height="40dp"
                     android:layout_marginTop="8dp"
-                    android:text="Sliders (Click to Expand)"
-                    android:textColor="@color/accent"
+                    android:background="@drawable/mc_button_bg"
+                    android:text="Sliders"
+                    android:textAllCaps="false"
+                    android:typeface="monospace"
+                    android:textColor="#3F3F3F"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -128,7 +143,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Speed: 50%"
-                        android:textColor="@color/white"/>
+                        android:typeface="monospace"
+                        android:textColor="#3F3F3F"/>
                     <SeekBar
                         android:id="@+id/seekbar_speed"
                         android:layout_width="match_parent"
@@ -141,7 +157,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Jump Height: 20%"
-                        android:textColor="@color/white"/>
+                        android:typeface="monospace"
+                        android:textColor="#3F3F3F"/>
                     <SeekBar
                         android:id="@+id/seekbar_jump"
                         android:layout_width="match_parent"
@@ -151,15 +168,16 @@
                 </LinearLayout>
                 
                 <!-- Expandable Section 3: Skins -->
-                <TextView
+                <Button
                     android:id="@+id/tv_category3"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#444444"
-                    android:padding="10dp"
+                    android:layout_height="40dp"
                     android:layout_marginTop="8dp"
-                    android:text="Skin Selector (Click to Expand)"
-                    android:textColor="@color/accent"
+                    android:background="@drawable/mc_button_bg"
+                    android:text="Skin Selector"
+                    android:textAllCaps="false"
+                    android:typeface="monospace"
+                    android:textColor="#3F3F3F"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -174,14 +192,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Select Skin to Apply:"
-                        android:textColor="@color/white"
+                        android:typeface="monospace"
+                        android:textColor="#3F3F3F"
                         android:layout_marginBottom="8dp"/>
 
                     <Spinner
                         android:id="@+id/spinner_skins"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="#555555"
+                        android:background="@drawable/mc_button_bg"
                         android:padding="8dp"
                         android:layout_marginBottom="12dp"/>
 
@@ -189,7 +208,12 @@
                         android:id="@+id/btn_apply_skins"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Apply to SKINS.ini"/>
+                        android:background="@drawable/mc_button_bg"
+                        android:text="Apply to SKINS.ini"
+                        android:textAllCaps="false"
+                        android:typeface="monospace"
+                        android:textColor="#3F3F3F"
+                        android:textStyle="bold"/>
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
