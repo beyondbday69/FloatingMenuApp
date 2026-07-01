@@ -1,132 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root_container"
-    android:layout_width="300dp"
-    android:layout_height="wrap_content"
-    android:background="@color/menu_bg"
-    android:orientation="vertical"
-    android:padding="8dp">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
-    <!-- Header for Dragging -->
-    <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#333333"
-        android:orientation="horizontal"
-        android:padding="12dp">
-
+    <!-- Collapsed View (Small Circle) -->
+    <RelativeLayout
+        android:id="@+id/collapsed_view"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:visibility="gone"
+        android:background="@drawable/circle_bg">
         <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Mod Menu"
-            android:textColor="@color/white"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/btn_close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="4dp"
-            android:text="X"
+            android:layout_centerInParent="true"
+            android:text="M"
+            android:textStyle="bold"
             android:textColor="@color/white"
-            android:background="@android:color/transparent"/>
-    </LinearLayout>
+            android:textSize="24sp"/>
+    </RelativeLayout>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_marginTop="8dp">
+    <!-- Expanded View (Full Menu) -->
+    <LinearLayout
+        android:id="@+id/expanded_view"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:background="@color/menu_bg"
+        android:orientation="vertical"
+        android:padding="8dp">
         
+        <!-- Header for Dragging & Minimizing -->
         <LinearLayout
+            android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:background="#333333"
+            android:orientation="horizontal"
+            android:padding="12dp">
 
-            <!-- Expandable Section -->
             <TextView
-                android:id="@+id/tv_category1"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:background="#444444"
-                android:padding="10dp"
-                android:text="Options (Click to Expand)"
-                android:textColor="@color/accent"
+                android:layout_weight="1"
+                android:text="Mod Menu"
+                android:textColor="@color/white"
                 android:textStyle="bold" />
 
-            <LinearLayout
-                android:id="@+id/container_category1"
-                android:layout_width="match_parent"
+            <!-- Minimize Button -->
+            <Button
+                android:id="@+id/btn_minimize"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp"
-                android:visibility="gone">
-                
-                <Switch
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="God Mode"
-                    android:textColor="@color/white"
-                    android:layout_marginBottom="8dp"/>
-                    
-                <Switch
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Infinite Ammo"
-                    android:textColor="@color/white"/>
-            </LinearLayout>
-
-            <!-- Sliders Section -->
-            <TextView
-                android:id="@+id/tv_category2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#444444"
-                android:padding="10dp"
-                android:layout_marginTop="8dp"
-                android:text="Sliders (Click to Expand)"
-                android:textColor="@color/accent"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:id="@+id/container_category2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp"
-                android:visibility="gone">
-                
-                <TextView
-                    android:id="@+id/tv_speed"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Speed: 50%"
-                    android:textColor="@color/white"/>
-                <SeekBar
-                    android:id="@+id/seekbar_speed"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:max="100"
-                    android:progress="50"
-                    android:layout_marginBottom="8dp"/>
-                    
-                <TextView
-                    android:id="@+id/tv_jump"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Jump Height: 20%"
-                    android:textColor="@color/white"/>
-                <SeekBar
-                    android:id="@+id/seekbar_jump"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:max="100"
-                    android:progress="20"/>
-            </LinearLayout>
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="4dp"
+                android:text="_"
+                android:textColor="@color/white"
+                android:background="@android:color/transparent"/>
             
+            <!-- Close Button -->
+            <Button
+                android:id="@+id/btn_close"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="4dp"
+                android:text="X"
+                android:layout_marginLeft="8dp"
+                android:textColor="@color/white"
+                android:background="@android:color/transparent"/>
         </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="8dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Expandable Section 1 -->
+                <TextView
+                    android:id="@+id/tv_category1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#444444"
+                    android:padding="10dp"
+                    android:text="Options (Click to Expand)"
+                    android:textColor="@color/accent"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/container_category1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="gone">
+                    <Switch
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="God Mode"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                    <Switch
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Infinite Ammo"
+                        android:textColor="@color/white"/>
+                </LinearLayout>
+
+                <!-- Expandable Section 2 -->
+                <TextView
+                    android:id="@+id/tv_category2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#444444"
+                    android:padding="10dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Sliders (Click to Expand)"
+                    android:textColor="@color/accent"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/container_category2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:visibility="gone">
+                    <TextView
+                        android:id="@+id/tv_speed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Speed: 50%"
+                        android:textColor="@color/white"/>
+                    <SeekBar
+                        android:id="@+id/seekbar_speed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="100"
+                        android:progress="50"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:id="@+id/tv_jump"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Jump Height: 20%"
+                        android:textColor="@color/white"/>
+                    <SeekBar
+                        android:id="@+id/seekbar_jump"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="100"
+                        android:progress="20"/>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</FrameLayout>

@@ -16,6 +16,8 @@ import android.widget.TextView;
 public class FloatingMenuService extends Service {
     private WindowManager mWindowManager;
     private View mFloatingView;
+    private View collapsedView;
+    private View expandedView;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,17 +50,20 @@ public class FloatingMenuService extends Service {
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mFloatingView, params);
 
+        collapsedView = mFloatingView.findViewById(R.id.collapsed_view);
+        expandedView = mFloatingView.findViewById(R.id.expanded_view);
+
         setupInteractions(params);
     }
 
     private void setupInteractions(final WindowManager.LayoutParams params) {
-        // Dragging
-        View header = mFloatingView.findViewById(R.id.header);
-        header.setOnTouchListener(new View.OnTouchListener() {
+        // Dragging listener
+        View.OnTouchListener dragListener = new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
+            private boolean isDragging;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -68,18 +73,42 @@ public class FloatingMenuService extends Service {
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+                        isDragging = false;
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        int diffX = (int) (event.getRawX() - initialTouchX);
+                        int diffY = (int) (event.getRawY() - initialTouchY);
+                        if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
+                            isDragging = true;
+                        }
+                        params.x = initialX + diffX;
+                        params.y = initialY + diffY;
                         mWindowManager.updateViewLayout(mFloatingView, params);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (!isDragging && v == collapsedView) {
+                            // Expand the menu
+                            collapsedView.setVisibility(View.GONE);
+                            expandedView.setVisibility(View.VISIBLE);
+                        }
                         return true;
                 }
                 return false;
             }
+        };
+
+        // Attach dragging
+        collapsedView.setOnTouchListener(dragListener);
+        View header = mFloatingView.findViewById(R.id.header);
+        header.setOnTouchListener(dragListener);
+
+        // Minimize Button
+        mFloatingView.findViewById(R.id.btn_minimize).setOnClickListener(v -> {
+            expandedView.setVisibility(View.GONE);
+            collapsedView.setVisibility(View.VISIBLE);
         });
 
-        // Close button
+        // Close Button (completely kill)
         mFloatingView.findViewById(R.id.btn_close).setOnClickListener(v -> stopSelf());
 
         // Accordion functionality
