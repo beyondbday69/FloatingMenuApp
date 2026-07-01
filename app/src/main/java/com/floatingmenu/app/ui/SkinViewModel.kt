@@ -89,4 +89,14 @@ class SkinViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun saveWindowSize(width: Int, height: Int) {
+        viewModelScope.launch {
+            repository.saveWindowSize(width, height)
+        }
+    }
+
+    suspend fun getWindowSize(): Pair<Int, Int> {
+        return repository.getWindowSize()
+    }
 }

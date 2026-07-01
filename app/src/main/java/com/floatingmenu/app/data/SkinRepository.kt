@@ -26,15 +26,16 @@ class SkinRepository(private val context: Context) {
     private val DUMP_PATH = "/storage/emulated/0/Android/data/com.pubg.imobile/files/dump_full.txt"
 
     private val categorySets = mapOf(
-        "AR" to setOf("AKM", "M16A4", "SCAR", "M416", "GROZA", "AUG", "QBZ", "M762", "MK47", "G36C", "HoneyBadger", "ASM", "FAMAS", "ACE32"),
-        "SMG" to setOf("UZI", "UMP", "Vector", "Thompson", "Bizon", "MP5K", "P90"),
-        "SR" to setOf("Kar98", "M24", "AWM", "Mosin", "DSR", "AMR"),
-        "DMR" to setOf("SKS", "VSS", "Mini14", "MK14", "SLR", "QBU", "MK12"),
-        "Shotgun" to setOf("S12K", "DBS", "S1897", "S686"),
-        "LMG" to setOf("M249", "DP28", "MG3"),
+        "Cosmetics" to setOf("Suit", "Bag", "Helmet", "Parachute", "Pet", "Hat", "Mask", "Pants", "Shoes", "Glasses", "Armor"),
+        "AR" to setOf("M416", "AKM", "SCAR", "M762", "GROZA", "AUG", "ACE32", "QBZ", "G36C", "ASM", "HoneyBadger", "M16A4", "MK47", "FAMAS"),
+        "SMG" to setOf("UMP", "Vector", "UZI", "Bizon", "P90", "MP5K", "Thompson"),
+        "SR" to setOf("Kar98", "M24", "AWM", "AMR", "Mosin", "DSR"),
+        "DMR" to setOf("MK14", "Mini14", "QBU", "MK12", "VSS", "SLR", "SKS"),
+        "Shotgun" to setOf("S686", "S1897", "S12K", "NS2000", "DBS"),
+        "LMG" to setOf("DP28", "M249", "MG3"),
+        "Throwable" to setOf("Grenade"),
         "Melee" to setOf("Pan", "Machete", "Crowbar", "Sickle"),
-        "Vehicles" to setOf("UAZ", "Dacia", "Buggy", "Motor", "CoupeRB"),
-        "Cosmetics" to setOf("Suit", "Bag", "Helmet", "Parachute", "Pet", "Shirt", "Hat", "Mask", "Glasses", "Pants", "Shoes", "Armor")
+        "Vehicles" to setOf("Motor", "Sidecar", "Dacia", "MiniBus", "Pickup", "PickupClosed", "Buggy", "UAZ", "UAZClosed", "UAZOpen", "PG117", "JetSki", "Mirado", "MiradoOpen", "Rony", "Scooter", "Snowmobile", "Tukshai", "MonsterTruck", "MotorGlider", "CoupeRB", "Tank", "MountainBike", "UTV", "Bike", "Horse", "Hovercraft")
     )
 
     private fun readWithShizuku(path: String): String {
@@ -71,6 +72,22 @@ class SkinRepository(private val context: Context) {
             throw Exception("Shizuku Read failed (Code: $exitCode, Err: ${errBuilder.toString()}). Path: $path")
         }
         return output
+    }
+
+    suspend fun saveWindowSize(width: Int, height: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[intPreferencesKey("window_width")] = width
+            prefs[intPreferencesKey("window_height")] = height
+        }
+    }
+
+    suspend fun getWindowSize(): Pair<Int, Int> {
+        return context.dataStore.data.map { prefs ->
+            Pair(
+                prefs[intPreferencesKey("window_width")] ?: 320,
+                prefs[intPreferencesKey("window_height")] ?: 500
+            )
+        }.first()
     }
 
     suspend fun saveIndex(key: String, value: Int) {

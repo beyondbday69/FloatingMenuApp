@@ -7,18 +7,15 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -29,7 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.*
@@ -40,6 +39,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.floatingmenu.app.data.MatchedItem
 import com.floatingmenu.app.ui.SkinUiState
 import com.floatingmenu.app.ui.SkinViewModel
+import kotlinx.coroutines.launch
 
 class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
@@ -130,135 +130,270 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FloatingApp(viewModel: SkinViewModel, onDrag: (Float, Float) -> Unit, onClose: () -> Unit, onToast: (String) -> Unit) {
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(true) }
     var showSheetForItem by remember { mutableStateOf<MatchedItem?>(null) }
     val sheetState = rememberModalBottomSheetState()
+    
+    val scope = rememberCoroutineScope()
+    var windowWidth by remember { mutableStateOf(320.dp) }
+    var windowHeight by remember { mutableStateOf(450.dp) }
+    
+    // Load persisted window size
+    LaunchedEffect(Unit) {
+        val (w, h) = viewModel.getWindowSize()
+        windowWidth = w.dp
+        windowHeight = h.dp
+    }
+
+    val configuration = LocalConfiguration.current
+    val maxW = (configuration.screenWidthDp * 0.9f).dp
+    val maxH = (configuration.screenHeightDp * 0.85f).dp
+    val minW = 240.dp
+    val minH = 200.dp
+
+    val accentPurple = Color(0xFFBB86FC)
+    val bgDark = Color(0xFF121212)
+    val headerDark = Color(0xFF1E1E1E)
 
     Box(modifier = Modifier.wrapContentSize()) {
         if (!isExpanded) {
-            Box(
+            // Pill State
+            Row(
                 modifier = Modifier
-                    .size(56.dp)
-                    .background(Color.DarkGray, CircleShape)
-                    .pointerInput(Unit) {
+                    .width(100.dp)
+                    .height(44.dp)
+                    .background(headerDark, CircleShape)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "⋮⋮",
+                    color = Color.White,
+                    modifier = Modifier.pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
                             onDrag(dragAmount.x, dragAmount.y)
                         }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                IconButton(
-                    onClick = { isExpanded = true },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Text("M", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                )
+                Text("🔫", fontSize = 16.sp)
+                IconButton(onClick = { isExpanded = true }, modifier = Modifier.size(24.dp)) {
+                    Text("[+]", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         } else {
+            // Main Window
             Column(
                 modifier = Modifier
-                    .width(320.dp)
-                    .heightIn(max = 500.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF1E1E1E))
+                    .width(windowWidth)
+                    .height(windowHeight)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(bgDark)
             ) {
                 // Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF333333))
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                onDrag(dragAmount.x, dragAmount.y)
-                            }
-                        }
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .height(48.dp)
+                        .background(headerDark)
+                        .padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Skin Mod Menu", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "⋮⋮",
+                        color = Color.Gray,
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
+                                    change.consume()
+                                    onDrag(dragAmount.x, dragAmount.y)
+                                }
+                            }
+                    )
+                    Text("Skin Menu", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                    
                     Row {
-                        Button(onClick = { viewModel.loadData() }) {
-                            Text("R")
+                        IconButton(onClick = { viewModel.loadData() }, modifier = Modifier.size(32.dp)) {
+                            Text("⟳", color = Color.White, fontSize = 18.sp)
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { isExpanded = false }) {
-                            Text("X")
+                        IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(32.dp)) {
+                            Text("–", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = onClose) {
-                            Text("Q")
+                        IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) {
+                            Text("✕", color = Color.White, fontSize = 14.sp)
                         }
                     }
                 }
 
-                val uiState by viewModel.uiState.collectAsState()
+                // Chips
+                val categories = listOf("All", "AR", "SMG", "Vehicles", "Cosmetics")
+                val moreCategories = listOf("X-Suits", "SR", "DMR", "Shotgun", "LMG", "Throwable", "Melee", "Other")
+                var activeChip by remember { mutableStateOf("All") }
+                var moreExpanded by remember { mutableStateOf(false) }
 
-                when (uiState) {
-                    is SkinUiState.Loading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .background(bgDark)
+                        .padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    categories.forEach { cat ->
+                        val isActive = activeChip == cat
+                        Column(
+                            modifier = Modifier.clickable { activeChip = cat },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(cat, color = if (isActive) Color.White else Color.Gray, fontSize = 13.sp)
+                            if (isActive) {
+                                Box(modifier = Modifier.height(2.dp).width(20.dp).background(accentPurple))
+                            }
                         }
                     }
-                    is SkinUiState.Error -> {
-                        Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
-                            Text((uiState as SkinUiState.Error).message, color = Color.Red)
+                    
+                    val isMoreActive = moreCategories.contains(activeChip)
+                    val moreLabel = if (isMoreActive) activeChip else "More ▾"
+                    
+                    Box {
+                        Column(
+                            modifier = Modifier.clickable { moreExpanded = true },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(moreLabel, color = if (isMoreActive) Color.White else Color.Gray, fontSize = 13.sp)
+                            if (isMoreActive) {
+                                Box(modifier = Modifier.height(2.dp).width(20.dp).background(accentPurple))
+                            }
+                        }
+                        DropdownMenu(expanded = moreExpanded, onDismissRequest = { moreExpanded = false }) {
+                            moreCategories.forEach { cat ->
+                                DropdownMenuItem(
+                                    text = { Text(cat) },
+                                    onClick = {
+                                        activeChip = cat
+                                        moreExpanded = false
+                                    }
+                                )
+                            }
                         }
                     }
-                    is SkinUiState.Success -> {
-                        val state = uiState as SkinUiState.Success
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            state.itemsByCategory.forEach { (category, items) ->
-                                item {
-                                    Text(
-                                        text = category,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(Color(0xFF444444))
-                                            .padding(8.dp),
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                }
+
+                Divider(color = Color(0xFF333333), thickness = 1.dp)
+
+                // List Area
+                val uiState by viewModel.uiState.collectAsState()
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    when (uiState) {
+                        is SkinUiState.Loading -> {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = accentPurple)
+                        }
+                        is SkinUiState.Error -> {
+                            Column(
+                                modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("⚠️", fontSize = 32.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Couldn't load skins — check Shizuku access", color = Color.LightGray, fontSize = 14.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                TextButton(onClick = { viewModel.loadData() }) {
+                                    Text("Retry", color = accentPurple)
                                 }
-                                items(items) { item ->
-                                    val currentSkinId = item.skinIds.getOrNull(item.index) ?: ""
-                                    val currentSkinName = state.dumpMap[currentSkinId] ?: currentSkinId
-                                    
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .combinedClickable(
-                                                onClick = {},
-                                                onLongClick = { showSheetForItem = item }
-                                            )
-                                            .padding(vertical = 12.dp, horizontal = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Button(onClick = {
-                                            val newIdx = (item.index - 1 + item.skinIds.size) % item.skinIds.size
-                                            viewModel.updateIndex(item, newIdx, onToast)
-                                        }) { Text("<") }
+                            }
+                        }
+                        is SkinUiState.Success -> {
+                            val state = uiState as SkinUiState.Success
+                            val allItems = state.itemsByCategory.values.flatten()
+                            val displayItems = if (activeChip == "All") allItems else state.itemsByCategory[activeChip] ?: emptyList()
+
+                            if (displayItems.isEmpty()) {
+                                Text("No items in this category", color = Color.Gray, modifier = Modifier.align(Alignment.Center))
+                            } else {
+                                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                    itemsIndexed(displayItems) { index, item ->
+                                        val currentSkinId = item.skinIds.getOrNull(item.index) ?: ""
+                                        val currentSkinName = state.dumpMap[currentSkinId] ?: currentSkinId
                                         
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(52.dp)
+                                                .padding(horizontal = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(item.name, color = Color.White, fontWeight = FontWeight.Bold)
-                                            Text(currentSkinName, color = Color.Gray, fontSize = 12.sp)
+                                            IconButton(
+                                                onClick = {
+                                                    val newIdx = (item.index - 1 + item.skinIds.size) % item.skinIds.size
+                                                    viewModel.updateIndex(item, newIdx, onToast)
+                                                },
+                                                modifier = Modifier.size(44.dp)
+                                            ) {
+                                                Text("◀", color = Color.White)
+                                            }
+                                            
+                                            Row(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clickable { showSheetForItem = item }
+                                                    .padding(horizontal = 4.dp),
+                                                horizontalArrangement = Arrangement.Center,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(item.name, color = Color.White, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                Text(" — ", color = Color.Gray)
+                                                Text(currentSkinName, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            }
+                                            
+                                            IconButton(
+                                                onClick = {
+                                                    val newIdx = (item.index + 1) % item.skinIds.size
+                                                    viewModel.updateIndex(item, newIdx, onToast)
+                                                },
+                                                modifier = Modifier.size(44.dp)
+                                            ) {
+                                                Text("▶", color = Color.White)
+                                            }
                                         }
                                         
-                                        Button(onClick = {
-                                            val newIdx = (item.index + 1) % item.skinIds.size
-                                            viewModel.updateIndex(item, newIdx, onToast)
-                                        }) { Text(">") }
+                                        if (index < displayItems.size - 1) {
+                                            Divider(color = Color(0xFF222222), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
+                    // Resize handle overlay
+                    Text(
+                        text = "⇲",
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 18.sp,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(24.dp)
+                            .pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDragEnd = {
+                                        viewModel.saveWindowSize(windowWidth.value.toInt(), windowHeight.value.toInt())
+                                    }
+                                ) { change, dragAmount ->
+                                    change.consume()
+                                    // simple pixel to dp conversion approx (ignores density for simplicity, works roughly)
+                                    val density = configuration.densityDpi / 160f
+                                    val newW = windowWidth + (dragAmount.x / density).dp
+                                    val newH = windowHeight + (dragAmount.y / density).dp
+                                    
+                                    windowWidth = newW.coerceIn(minW, maxW)
+                                    windowHeight = newH.coerceIn(minH, maxH)
+                                }
+                            }
+                            .padding(end = 4.dp, bottom = 4.dp)
+                    )
                 }
             }
         }
