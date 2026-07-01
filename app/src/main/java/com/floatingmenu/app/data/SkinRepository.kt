@@ -48,11 +48,19 @@ class SkinRepository(private val context: Context) {
         
         val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
         val reader = BufferedReader(InputStreamReader(process.inputStream))
+        val errReader = BufferedReader(InputStreamReader(process.errorStream))
+        
         val builder = StringBuilder()
         var line: String?
         while (reader.readLine().also { line = it } != null) {
             builder.append(line).append("\n")
         }
+        
+        val errBuilder = StringBuilder()
+        while (errReader.readLine().also { line = it } != null) {
+            errBuilder.append(line).append(" ")
+        }
+        
         process.waitFor()
         val exitCode = process.exitValue()
         
@@ -60,7 +68,7 @@ class SkinRepository(private val context: Context) {
         Log.d("SkinMod", "Shizuku exit code: $exitCode, Output length: ${output.length}")
         
         if (exitCode != 0 || output.trim().isEmpty()) {
-            throw Exception("Failed to read file or file is empty (Exit code: $exitCode). Ensure file exists at $path")
+            throw Exception("Shizuku Read failed (Code: $exitCode, Err: ${errBuilder.toString()}). Path: $path")
         }
         return output
     }
@@ -184,18 +192,27 @@ class SkinRepository(private val context: Context) {
         }
         
         if (written) {
-            // Write to local cache dir first
-            val tempFile = File(context.cacheDir, "SKINS.ini.tmp")
+            // Write to local cache dir first - MUST be external so Shizuku shell user can read it
+            val tempFile = File(context.getExternalFilesDir(null), "SKINS.ini.tmp")
             tempFile.writeText(builder.toString())
             
             // Use Shizuku to copy over to the protected directory
             val cmd = "cp '${tempFile.absolutePath}' '$INI_PATH' && chmod 644 '$INI_PATH'"
             Log.d("SkinMod", "Shizuku executing write: $cmd")
             val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+            
+            // Capture any error output to show in the Toast!
+            val errReader = java.io.BufferedReader(java.io.InputStreamReader(process.errorStream))
+            val errBuilder = java.lang.StringBuilder()
+            var errLine: String?
+            while (errReader.readLine().also { errLine = it } != null) {
+                errBuilder.append(errLine).append(" ")
+            }
+            
             process.waitFor()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                throw Exception("Failed to write updated SKINS.ini via Shizuku (exit code: $exitCode)")
+                throw Exception("Shizuku Write failed (code: $exitCode, err: ${errBuilder.toString()})")
             }
         }
     }
