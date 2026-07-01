@@ -10,8 +10,9 @@ android {
         applicationId "com.floatingmenu.app"
         minSdk 24
         targetSdk 34
-        versionCode (int)(System.currentTimeMillis() / 10000)
-        versionName "1.0." + (System.currentTimeMillis() / 10000)
+        def timeCode = (System.currentTimeMillis() / 10000).toInteger()
+        versionCode timeCode
+        versionName "1.0." + timeCode
     }
 
     buildTypes {
