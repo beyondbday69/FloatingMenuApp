@@ -30,17 +30,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        if (checkPermissions()) {
-            startFloatingService()
-            finish()
-        } else {
-            setContent {
-                PermissionScreen(
-                    onGrantClicked = {
-                        requestPermissions()
-                    }
-                )
-            }
+        setContent {
+            MainScreen(
+                hasPermissions = checkPermissions(),
+                onRequestPermissions = { requestPermissions() },
+                onStartService = { startFloatingService() },
+                onStopService = { stopFloatingService() },
+                onTestShizuku = { testShizukuAccess() }
+            )
         }
     }
 
@@ -75,8 +72,15 @@ class MainActivity : ComponentActivity() {
 
     private fun checkAndStartService() {
         if (checkPermissions()) {
-            startFloatingService()
-            finish()
+            setContent {
+                MainScreen(
+                    hasPermissions = true,
+                    onRequestPermissions = { requestPermissions() },
+                    onStartService = { startFloatingService() },
+                    onStopService = { stopFloatingService() },
+                    onTestShizuku = { testShizukuAccess() }
+                )
+            }
         } else {
             Toast.makeText(this, "Permissions not fully granted", Toast.LENGTH_SHORT).show()
         }
@@ -85,19 +89,65 @@ class MainActivity : ComponentActivity() {
     private fun startFloatingService() {
         startService(Intent(this, ComposeFloatingMenuService::class.java))
     }
+
+    private fun stopFloatingService() {
+        stopService(Intent(this, ComposeFloatingMenuService::class.java))
+    }
+
+    private val SHIZUKU_CODE = 102
+    private fun testShizukuAccess() {
+        if (!rikka.shizuku.Shizuku.pingBinder()) {
+            Toast.makeText(this, "Shizuku is not running!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (rikka.shizuku.Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            rikka.shizuku.Shizuku.requestPermission(SHIZUKU_CODE)
+            return
+        }
+        try {
+            val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", "ls -l /sdcard/Android/data/com.pubg.imobile"), null, null)
+            process.waitFor()
+            Toast.makeText(this, "Shizuku works! It can see inside com.pubg.imobile folder.", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Shizuku failed: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 }
 
 @Composable
-fun PermissionScreen(onGrantClicked: () -> Unit) {
+fun MainScreen(
+    hasPermissions: Boolean,
+    onRequestPermissions: () -> Unit,
+    onStartService: () -> Unit,
+    onStopService: () -> Unit,
+    onTestShizuku: () -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("We need Overlay and Storage permissions to function.")
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onGrantClicked) {
-            Text("Grant Permissions")
+        Text("Floating Mod Menu", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(32.dp))
+
+        if (!hasPermissions) {
+            Text("We need Overlay and Storage permissions to function.")
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onRequestPermissions) {
+                Text("Grant Permissions")
+            }
+        } else {
+            Button(onClick = onStartService, modifier = Modifier.fillMaxWidth(0.7f)) {
+                Text("Start Floating Menu")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onStopService, modifier = Modifier.fillMaxWidth(0.7f)) {
+                Text("Stop Floating Menu")
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = onTestShizuku, modifier = Modifier.fillMaxWidth(0.7f)) {
+                Text("Test Shizuku Access")
+            }
         }
     }
 }

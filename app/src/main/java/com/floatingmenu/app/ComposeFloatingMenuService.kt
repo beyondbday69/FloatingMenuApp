@@ -129,9 +129,8 @@ fun FloatingApp(viewModel: SkinViewModel, onDrag: (Float, Float) -> Unit, onClos
     if (!isExpanded) {
         Box(
             modifier = Modifier
-                .size(60.dp)
-                .clip(CircleShape)
-                .background(Color.DarkGray)
+                .size(56.dp)
+                .background(Color.DarkGray, CircleShape)
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
@@ -140,8 +139,11 @@ fun FloatingApp(viewModel: SkinViewModel, onDrag: (Float, Float) -> Unit, onClos
                 },
             contentAlignment = Alignment.Center
         ) {
-            Button(onClick = { isExpanded = true }, shape = CircleShape) {
-                Text("M")
+            IconButton(
+                onClick = { isExpanded = true },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text("M", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
     } else {
