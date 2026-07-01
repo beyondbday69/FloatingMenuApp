@@ -14,10 +14,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import rikka.shizuku.Shizuku;
+import java.io.File;
+
 public class MainActivity extends AppCompatActivity {
     private static final int SYSTEM_ALERT_WINDOW_PERMISSION = 2084;
     private static final int STORAGE_PERMISSION_CODE = 100;
     private static final int MANAGE_EXTERNAL_STORAGE_PERMISSION_CODE = 101;
+    private static final int SHIZUKU_CODE = 102;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,45 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_stop_service).setOnClickListener(v -> {
             stopService(new Intent(MainActivity.this, FloatingMenuService.class));
         });
+
+        findViewById(R.id.btn_test_data_access).setOnClickListener(v -> {
+            testShizukuAccess();
+        });
+    }
+
+    private void testShizukuAccess() {
+        if (!Shizuku.pingBinder()) {
+            Toast.makeText(this, "Shizuku is not running!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            Shizuku.requestPermission(SHIZUKU_CODE);
+            return;
+        }
+
+        executeShizukuTest();
+    }
+
+    private void executeShizukuTest() {
+        try {
+            Shizuku.newProcess(new String[]{"sh", "-c", "ls -l /sdcard/Android/data/com.pubg.imobile"}, null, null).waitFor();
+            Toast.makeText(this, "Shizuku works! It can see inside com.pubg.imobile folder.", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Shizuku failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkPermissionsAndStart();
+            } else {
+                Toast.makeText(this, "Storage Permission denied!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void checkPermissionsAndStart() {
@@ -97,18 +140,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                checkPermissionsAndStart();
-            } else {
-                Toast.makeText(this, "Storage Permission denied!", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 }
