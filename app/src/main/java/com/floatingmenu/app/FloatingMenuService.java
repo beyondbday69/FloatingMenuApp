@@ -10,10 +10,15 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class FloatingMenuService extends Service {
     private WindowManager mWindowManager;
@@ -126,7 +131,7 @@ public class FloatingMenuService extends Service {
             containerCategory2.setVisibility(isVisible ? View.GONE : View.VISIBLE);
         });
 
-        // Accordion functionality Category 3 (Lua Scripts)
+        // Accordion functionality Category 3 (Skin Selector)
         View tvCategory3 = mFloatingView.findViewById(R.id.tv_category3);
         View containerCategory3 = mFloatingView.findViewById(R.id.container_category3);
         tvCategory3.setOnClickListener(v -> {
@@ -157,13 +162,44 @@ public class FloatingMenuService extends Service {
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        // Skin Apply Button
-        Button btnApplySkins = mFloatingView.findViewById(R.id.btn_apply_skins);
-        if (btnApplySkins != null) {
-            btnApplySkins.setOnClickListener(v -> {
-                // Here is where the skins logic will hook up in the future
-                Toast.makeText(FloatingMenuService.this, "Skins applied successfully!", Toast.LENGTH_SHORT).show();
-            });
+        // Skin Selector Spinner
+        Spinner spinnerSkins = mFloatingView.findViewById(R.id.spinner_skins);
+        if (spinnerSkins != null) {
+            String[] skins = {
+                "M416 Glacier|M416=101004008",
+                "AKM Hellfire|AKM=101001005",
+                "AWM Godzilla|AWM=103003009",
+                "UAZ Aegis|UAZ_1908001=190800101"
+            };
+            String[] displaySkins = new String[skins.length];
+            for (int i = 0; i < skins.length; i++) {
+                displaySkins[i] = skins[i].split("\\|")[0];
+            }
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, displaySkins);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerSkins.setAdapter(adapter);
+
+            Button btnApplySkins = mFloatingView.findViewById(R.id.btn_apply_skins);
+            if (btnApplySkins != null) {
+                btnApplySkins.setOnClickListener(v -> {
+                    int pos = spinnerSkins.getSelectedItemPosition();
+                    if (pos >= 0 && pos < skins.length) {
+                        String toWrite = skins[pos].split("\\|")[1] + "\n";
+                        try {
+                            File dir = new File("/sdcard/");
+                            if (!dir.exists()) dir.mkdirs();
+                            File file = new File(dir, "SKINS.ini");
+                            FileOutputStream fos = new FileOutputStream(file, false); // false = overwrite to only apply 1 skin at a time
+                            fos.write(toWrite.getBytes());
+                            fos.close();
+                            Toast.makeText(FloatingMenuService.this, "Skin applied to /sdcard/SKINS.ini!", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(FloatingMenuService.this, "Storage Permission Required!", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
         }
     }
 

@@ -170,64 +170,23 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Weapons"
-                        android:textColor="@color/accent"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="4dp"/>
-
-                    <Switch
-                        android:id="@+id/switch_m416_glacier"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="M416 Glacier (Lvl 7)"
-                        android:textColor="@color/white"
-                        android:layout_marginBottom="4dp"/>
-                    
-                    <Switch
-                        android:id="@+id/switch_akm_hellfire"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="AKM Hellfire"
-                        android:textColor="@color/white"
-                        android:layout_marginBottom="4dp"/>
-
-                    <Switch
-                        android:id="@+id/switch_awm_godzilla"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="AWM Godzilla"
-                        android:textColor="@color/white"
-                        android:layout_marginBottom="12dp"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Vehicles"
-                        android:textColor="@color/accent"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="4dp"/>
-
-                    <Switch
-                        android:id="@+id/switch_uaz_aegis"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="UAZ Aegis"
-                        android:textColor="@color/white"
-                        android:layout_marginBottom="4dp"/>
-
-                    <Switch
-                        android:id="@+id/switch_dacia_shark"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Dacia Shark"
+                        android:text="Select Skin to Apply:"
                         android:textColor="@color/white"
                         android:layout_marginBottom="8dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinner_skins"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#555555"
+                        android:padding="8dp"
+                        android:layout_marginBottom="12dp"/>
 
                     <Button
                         android:id="@+id/btn_apply_skins"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Apply Selected Skins"/>
+                        android:text="Apply to SKINS.ini"/>
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
