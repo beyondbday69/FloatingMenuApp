@@ -129,7 +129,6 @@ class SkinRepository(private val context: Context) {
         val skinListMap = mutableMapOf<String, List<String>>()
         
         var currentSection = ""
-        var currentSkinName = ""
 
         content.lines().forEach { rawLine ->
             val line = rawLine.trim()
@@ -143,17 +142,12 @@ class SkinRepository(private val context: Context) {
                     }
                 }
             } else if (currentSection == "[SKIN_LIST]") {
-                if (line.startsWith("#")) {
-                    val potentialName = line.substring(1).trim()
-                    if (potentialName.isNotEmpty() && !potentialName.startsWith("=")) {
-                        currentSkinName = potentialName
-                    }
-                } else if (line.contains("=")) {
+                if (line.contains("=") && !line.startsWith("#")) {
                     val parts = line.split("=", limit = 2)
-                    if (parts.size == 2 && currentSkinName.isNotEmpty()) {
+                    if (parts.size == 2) {
+                        val skinName = parts[0].trim()
                         val ids = parts[1].split(",").map { it.trim() }
-                        skinListMap[currentSkinName] = ids
-                        currentSkinName = "" 
+                        skinListMap[skinName] = ids
                     }
                 }
             }
