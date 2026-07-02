@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.floatingmenu.app'
-    compileSdk 35
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.floatingmenu.app"
         minSdk 26
-        targetSdk 35
+        targetSdk 34
         def timeCode = (System.currentTimeMillis() / 10000).toInteger()
         versionCode timeCode
         versionName "3.0." + timeCode
@@ -20,7 +20,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14'
+        kotlinCompilerExtensionVersion '1.5.9'
     }
 
     buildTypes {
@@ -36,7 +36,6 @@ android {
     kotlinOptions {
         jvmTarget = '17'
         freeCompilerArgs += [
-            '-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi',
             '-opt-in=androidx.compose.material3.ExperimentalMaterial3Api',
             '-opt-in=androidx.compose.foundation.ExperimentalFoundationApi'
         ]
@@ -44,31 +43,31 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.core:core-ktx:1.15.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
     
-    // Compose BOM
-    def composeBom = platform('androidx.compose:compose-bom:2025.01.01')
+    // Compose BOM 2024.02
+    def composeBom = platform('androidx.compose:compose-bom:2024.02.02')
     implementation composeBom
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material:material-icons-extended'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7'
-    implementation 'androidx.activity:activity-compose:1.9.3'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+    implementation 'androidx.activity:activity-compose:1.8.2'
     
     // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     
     // DataStore
-    implementation 'androidx.datastore:datastore-preferences:1.1.1'
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
     
     // SavedState
     implementation 'androidx.savedstate:savedstate-ktx:1.2.1'
     
     // Material
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.11.0'
     
     implementation 'dev.rikka.shizuku:api:12.1.0'
     implementation 'dev.rikka.shizuku:provider:12.1.0'
