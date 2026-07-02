@@ -224,7 +224,7 @@ fun FloatingApp(viewModel: SkinViewModel, sukunaViewModel: SukunaViewModel, onDr
                         },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("  SUKUNA MOD v1", color = ModRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("  MOD V1", color = ModRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.weight(1f))
                     Text("[HIDE]", color = Color.White, fontSize = 12.sp, modifier = Modifier.clickable { isExpanded = false }.padding(horizontal = 8.dp))
                     Text("[X]", color = Color.Gray, fontSize = 12.sp, modifier = Modifier.clickable { onClose() }.padding(end = 8.dp))
@@ -263,7 +263,7 @@ fun FloatingApp(viewModel: SkinViewModel, sukunaViewModel: SukunaViewModel, onDr
                                 val uiState by viewModel.uiState.collectAsState()
                                 when (uiState) {
                                     is SkinUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = ModRed)
-                                    is SkinUiState.Error -> Text("Error loading skins", color = ModRed, modifier = Modifier.align(Alignment.Center))
+                                    is SkinUiState.Error -> Text("Shizuku not working", color = ModRed, modifier = Modifier.align(Alignment.Center))
                                     is SkinUiState.Success -> {
                                         val state = uiState as SkinUiState.Success
                                         val allItems = state.itemsByCategory.values.flatten()
