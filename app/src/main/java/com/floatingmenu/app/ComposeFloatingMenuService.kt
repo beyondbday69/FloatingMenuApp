@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,17 +43,18 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.floatingmenu.app.data.MatchedItem
+import com.floatingmenu.app.ui.CounterViewModel
 import com.floatingmenu.app.ui.SkinUiState
 import com.floatingmenu.app.ui.SkinViewModel
 import com.floatingmenu.app.ui.SukunaContent
 import com.floatingmenu.app.ui.SukunaViewModel
-import kotlinx.coroutines.launch
 
 class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
     private lateinit var windowManager: WindowManager
     private lateinit var composeView: ComposeView
     private lateinit var fovView: ComposeView
+    private lateinit var counterView: ComposeView
     private lateinit var params: WindowManager.LayoutParams
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -62,6 +62,7 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     private lateinit var viewModel: SkinViewModel
     private lateinit var sukunaViewModel: SukunaViewModel
+    private lateinit var counterViewModel: CounterViewModel
 
     override fun onCreate() {
         super.onCreate()
@@ -71,6 +72,7 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
         val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, factory)[SkinViewModel::class.java]
         sukunaViewModel = ViewModelProvider(this, factory)[SukunaViewModel::class.java]
+        counterViewModel = ViewModelProvider(this, factory)[CounterViewModel::class.java]
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -138,6 +140,65 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
         }
         windowManager.addView(fovView, fovParams)
 
+        // Player/Bot Counter Overlay (Top Center)
+        val counterParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            layoutFlag,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply { 
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = 80 // offset from top
+        }
+
+        counterView = ComposeView(this).apply {
+            setViewTreeLifecycleOwner(this@ComposeFloatingMenuService)
+            setViewTreeViewModelStoreOwner(this@ComposeFloatingMenuService)
+            setViewTreeSavedStateRegistryOwner(this@ComposeFloatingMenuService)
+            setContent {
+                val sukunaState by sukunaViewModel.uiState.collectAsState()
+                if (sukunaState.ESP_ON) {
+                    val counterState by counterViewModel.uiState.collectAsState()
+                    MaterialTheme(colorScheme = darkColorScheme()) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("PLAYER", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                    Text(
+                                        "${counterState.playerCount}", 
+                                        style = MaterialTheme.typography.titleLarge, 
+                                        color = if (counterState.playerCount > 0) Color.Red else MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Box(modifier = Modifier.width(1.dp).height(30.dp).background(MaterialTheme.colorScheme.outlineVariant))
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("BOT", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+                                    Text(
+                                        "${counterState.botCount}", 
+                                        style = MaterialTheme.typography.titleLarge, 
+                                        color = if (counterState.botCount > 0) Color(0xFFFFA500) else MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        windowManager.addView(counterView, counterParams)
+
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
@@ -148,6 +209,7 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
         store.clear()
         if (::composeView.isInitialized) windowManager.removeView(composeView)
         if (::fovView.isInitialized) windowManager.removeView(fovView)
+        if (::counterView.isInitialized) windowManager.removeView(counterView)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
