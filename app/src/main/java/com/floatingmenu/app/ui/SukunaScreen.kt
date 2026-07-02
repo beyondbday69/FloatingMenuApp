@@ -5,129 +5,127 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floatingmenu.app.data.SukunaState
-
-val ModRed = Color(0xFFFF2A2A)
-val ModText = Color(0xFFEEEEEE)
-val ModMuted = Color(0xFF888888)
 
 @Composable
 fun SukunaContent(viewModel: SukunaViewModel, tab: String) {
     val state by viewModel.uiState.collectAsState()
-    
+    val cs = MaterialTheme.colorScheme
+
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         when (tab) {
             "ESP" -> {
-                item { ModToggle("ESP Master", state.ESP_ON) { viewModel.updateState { it.copy(ESP_ON = it.ESP_ON.not()) } } }
-                
+                item { SectionHeader("Player ESP") }
+                item { M3Toggle("ESP Master", state.ESP_ON) { viewModel.updateState { it.copy(ESP_ON = !it.ESP_ON) } } }
                 item {
-                    Column {
-                        Text("ESP Color", color = ModMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                        Text("ESP Color", style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             val colors = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.White)
                             colors.forEachIndexed { index, color ->
                                 val id = index + 1
+                                val isSelected = state.Color == id
                                 Box(
                                     modifier = Modifier
-                                        .size(20.dp)
-                                        .background(if (state.Color == id) color else Color.Transparent)
-                                        .border(1.dp, color)
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                        .then(if (isSelected) Modifier.border(3.dp, cs.primary, CircleShape) else Modifier.border(1.dp, cs.outlineVariant, CircleShape))
                                         .clickable { viewModel.updateState { it.copy(Color = id) } }
                                 )
                             }
                         }
                     }
                 }
-                
-                item { ModToggle("Show HP", state.HP) { viewModel.updateState { it.copy(HP = it.HP.not()) } } }
-                item { ModToggle("Show Distance", state.Distance) { viewModel.updateState { it.copy(Distance = it.Distance.not()) } } }
-                
-                item { Spacer(modifier = Modifier.height(4.dp)) }
-                item { ModToggle("Grenade ESP", state.EspBom) { viewModel.updateState { it.copy(EspBom = it.EspBom.not()) } } }
-                item { ModToggle("- Ground Items", state.EspBomItem) { viewModel.updateState { it.copy(EspBomItem = it.EspBomItem.not()) } } }
-                item { ModToggle("- Active Thrown", state.EspBomActive) { viewModel.updateState { it.copy(EspBomActive = it.EspBomActive.not()) } } }
+                item { M3Toggle("Show HP", state.HP) { viewModel.updateState { it.copy(HP = !it.HP) } } }
+                item { M3Toggle("Show Distance", state.Distance) { viewModel.updateState { it.copy(Distance = !it.Distance) } } }
+                item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+                item { SectionHeader("Grenade ESP") }
+                item { M3Toggle("Grenade Master", state.EspBom) { viewModel.updateState { it.copy(EspBom = !it.EspBom) } } }
+                item { M3Toggle("Ground Items", state.EspBomItem) { viewModel.updateState { it.copy(EspBomItem = !it.EspBomItem) } } }
+                item { M3Toggle("Active Thrown", state.EspBomActive) { viewModel.updateState { it.copy(EspBomActive = !it.EspBomActive) } } }
             }
             "LOOT" -> {
-                item { ModToggle("Weapon ESP", state.ESPWeapon) { viewModel.updateState { it.copy(ESPWeapon = it.ESPWeapon.not()) } } }
-                item { ModSlider("Loot Text Size", state.WpnSize.toFloat(), 50f, 200f) { v -> viewModel.updateState { it.copy(WpnSize = v.toInt()) } } }
-                item { Spacer(modifier = Modifier.height(4.dp)) }
-                
-                item { ModToggle("ARs", state.WpnAR) { viewModel.updateState { it.copy(WpnAR = it.WpnAR.not()) } } }
-                item { ModToggle("SMGs", state.WpnSMG) { viewModel.updateState { it.copy(WpnSMG = it.WpnSMG.not()) } } }
-                item { ModToggle("Snipers", state.WpnSR) { viewModel.updateState { it.copy(WpnSR = it.WpnSR.not()) } } }
-                item { ModToggle("Shotguns", state.WpnSG) { viewModel.updateState { it.copy(WpnSG = it.WpnSG.not()) } } }
-                item { ModToggle("LMGs", state.WpnLMG) { viewModel.updateState { it.copy(WpnLMG = it.WpnLMG.not()) } } }
-                item { ModToggle("Pistols", state.WpnPistol) { viewModel.updateState { it.copy(WpnPistol = it.WpnPistol.not()) } } }
-                item { ModToggle("Melee", state.WpnMelee) { viewModel.updateState { it.copy(WpnMelee = it.WpnMelee.not()) } } }
-                item { ModToggle("Special", state.WpnSP) { viewModel.updateState { it.copy(WpnSP = it.WpnSP.not()) } } }
-                item { ModToggle("Lv3 Gear", state.WpnLV3) { viewModel.updateState { it.copy(WpnLV3 = it.WpnLV3.not()) } } }
-                item { ModToggle("Scopes", state.WpnSCP) { viewModel.updateState { it.copy(WpnSCP = it.WpnSCP.not()) } } }
-                item { ModToggle("Meds", state.WpnMED) { viewModel.updateState { it.copy(WpnMED = it.WpnMED.not()) } } }
+                item { SectionHeader("Weapon Loot ESP") }
+                item { M3Toggle("Weapon ESP", state.ESPWeapon) { viewModel.updateState { it.copy(ESPWeapon = !it.ESPWeapon) } } }
+                item { M3Slider("Text Size", state.WpnSize.toFloat(), 50f, 200f) { v -> viewModel.updateState { it.copy(WpnSize = v.toInt()) } } }
+                item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+                item { SectionHeader("Weapon Filters") }
+                item { M3Toggle("ARs", state.WpnAR) { viewModel.updateState { it.copy(WpnAR = !it.WpnAR) } } }
+                item { M3Toggle("SMGs", state.WpnSMG) { viewModel.updateState { it.copy(WpnSMG = !it.WpnSMG) } } }
+                item { M3Toggle("Snipers", state.WpnSR) { viewModel.updateState { it.copy(WpnSR = !it.WpnSR) } } }
+                item { M3Toggle("Shotguns", state.WpnSG) { viewModel.updateState { it.copy(WpnSG = !it.WpnSG) } } }
+                item { M3Toggle("LMGs", state.WpnLMG) { viewModel.updateState { it.copy(WpnLMG = !it.WpnLMG) } } }
+                item { M3Toggle("Pistols", state.WpnPistol) { viewModel.updateState { it.copy(WpnPistol = !it.WpnPistol) } } }
+                item { M3Toggle("Melee", state.WpnMelee) { viewModel.updateState { it.copy(WpnMelee = !it.WpnMelee) } } }
+                item { M3Toggle("Special", state.WpnSP) { viewModel.updateState { it.copy(WpnSP = !it.WpnSP) } } }
+                item { M3Toggle("Lv3 Gear", state.WpnLV3) { viewModel.updateState { it.copy(WpnLV3 = !it.WpnLV3) } } }
+                item { M3Toggle("Scopes", state.WpnSCP) { viewModel.updateState { it.copy(WpnSCP = !it.WpnSCP) } } }
+                item { M3Toggle("Meds", state.WpnMED) { viewModel.updateState { it.copy(WpnMED = !it.WpnMED) } } }
             }
             "VISUALS" -> {
-                item { ModToggle("White Body (iPad)", state.WhiteBody) { viewModel.updateState { it.copy(WhiteBody = it.WhiteBody.not()) } } }
-                item { ModSlider("Offset", state.WbOffset.toFloat(), 0f, 20f) { v -> viewModel.updateState { it.copy(WbOffset = v.toInt()) } } }
-                item { ModSlider("Power", state.WbPower.toFloat(), 0f, 50f) { v -> viewModel.updateState { it.copy(WbPower = v.toInt()) } } }
-                item { ModSlider("Shadow", state.WbShadow.toFloat(), 0f, 200f) { v -> viewModel.updateState { it.copy(WbShadow = v.toInt()) } } }
+                item { SectionHeader("White Body") }
+                item { M3Toggle("White Body (iPad)", state.WhiteBody) { viewModel.updateState { it.copy(WhiteBody = !it.WhiteBody) } } }
+                item { M3Slider("Offset", state.WbOffset.toFloat(), 0f, 20f) { v -> viewModel.updateState { it.copy(WbOffset = v.toInt()) } } }
+                item { M3Slider("Power", state.WbPower.toFloat(), 0f, 50f) { v -> viewModel.updateState { it.copy(WbPower = v.toInt()) } } }
+                item { M3Slider("Shadow", state.WbShadow.toFloat(), 0f, 200f) { v -> viewModel.updateState { it.copy(WbShadow = v.toInt()) } } }
             }
             "MISC" -> {
-                item { ModSlider("Magic Bullet (%)", state.MagicBullet.toFloat(), 0f, 100f) { v -> viewModel.updateState { it.copy(MagicBullet = v.toInt()) } } }
+                item { SectionHeader("Combat") }
+                item { M3Slider("Magic Bullet %", state.MagicBullet.toFloat(), 0f, 100f) { v -> viewModel.updateState { it.copy(MagicBullet = v.toInt()) } } }
             }
         }
     }
 }
 
 @Composable
-fun ModToggle(title: String, checked: Boolean, onClick: () -> Unit) {
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(vertical = 6.dp)
+    )
+}
+
+@Composable
+fun M3Toggle(title: String, checked: Boolean, onToggle: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .clickable { onToggle() }
+            .padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, color = ModText, fontSize = 12.sp)
-        Box(
-            modifier = Modifier
-                .width(28.dp)
-                .height(14.dp)
-                .border(1.dp, if (checked) ModRed else ModMuted)
-                .background(if (checked) ModRed.copy(alpha = 0.8f) else Color.Transparent),
-            contentAlignment = Alignment.Center
-        ) {
-            if (checked) {
-                Text("ON", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-            }
-        }
+        Text(title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        Switch(checked = checked, onCheckedChange = { onToggle() })
     }
 }
 
 @Composable
-fun ModSlider(title: String, value: Float, min: Float, max: Float, onValueChange: (Float) -> Unit) {
-    Column {
+fun M3Slider(title: String, value: Float, min: Float, max: Float, onValueChange: (Float) -> Unit) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(title, color = ModText, fontSize = 12.sp)
-            Text("${value.toInt()}", color = ModRed, fontSize = 12.sp)
+            Text(title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text("${value.toInt()}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         }
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = min..max,
-            colors = SliderDefaults.colors(
-                thumbColor = ModRed, 
-                activeTrackColor = ModRed,
-                inactiveTrackColor = Color(0xFF333333)
-            )
-        )
+        Slider(value = value, onValueChange = onValueChange, valueRange = min..max)
     }
 }

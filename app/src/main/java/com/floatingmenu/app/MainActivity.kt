@@ -13,11 +13,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 
@@ -29,15 +31,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         setContent {
-            MainScreen(
-                hasPermissions = checkPermissions(),
-                onRequestPermissions = { requestPermissions() },
-                onStartService = { startFloatingService() },
-                onStopService = { stopFloatingService() },
-                onTestShizuku = { testShizukuAccess() }
-            )
+            MaterialTheme(colorScheme = darkColorScheme()) {
+                MainScreen(
+                    hasPermissions = checkPermissions(),
+                    onRequestPermissions = { requestPermissions() },
+                    onStartService = { startFloatingService() },
+                    onStopService = { stopFloatingService() },
+                    onTestShizuku = { testShizukuAccess() }
+                )
+            }
         }
     }
 
@@ -73,13 +76,15 @@ class MainActivity : ComponentActivity() {
     private fun checkAndStartService() {
         if (checkPermissions()) {
             setContent {
-                MainScreen(
-                    hasPermissions = true,
-                    onRequestPermissions = { requestPermissions() },
-                    onStartService = { startFloatingService() },
-                    onStopService = { stopFloatingService() },
-                    onTestShizuku = { testShizukuAccess() }
-                )
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    MainScreen(
+                        hasPermissions = true,
+                        onRequestPermissions = { requestPermissions() },
+                        onStartService = { startFloatingService() },
+                        onStopService = { stopFloatingService() },
+                        onTestShizuku = { testShizukuAccess() }
+                    )
+                }
             }
         } else {
             Toast.makeText(this, "Permissions not fully granted", Toast.LENGTH_SHORT).show()
@@ -107,7 +112,7 @@ class MainActivity : ComponentActivity() {
         try {
             val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", "ls -l /sdcard/Android/data/com.pubg.imobile"), null, null)
             process.waitFor()
-            Toast.makeText(this, "Shizuku works! It can see inside com.pubg.imobile folder.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Shizuku works!", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             Toast.makeText(this, "Shizuku failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
@@ -122,31 +127,54 @@ fun MainScreen(
     onStopService: () -> Unit,
     onTestShizuku: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Floating Mod Menu", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(32.dp))
+    val cs = MaterialTheme.colorScheme
+    Scaffold(containerColor = cs.surface) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(Icons.Filled.Gamepad, contentDescription = null, modifier = Modifier.size(64.dp), tint = cs.primary)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("MOD V1", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = cs.onSurface)
+            Text("Game Overlay Menu", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(40.dp))
 
-        if (!hasPermissions) {
-            Text("We need Overlay and Storage permissions to function.")
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onRequestPermissions) {
-                Text("Grant Permissions")
-            }
-        } else {
-            Button(onClick = onStartService, modifier = Modifier.fillMaxWidth(0.7f)) {
-                Text("Start Floating Menu")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onStopService, modifier = Modifier.fillMaxWidth(0.7f)) {
-                Text("Stop Floating Menu")
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = onTestShizuku, modifier = Modifier.fillMaxWidth(0.7f)) {
-                Text("Test Shizuku Access")
+            if (!hasPermissions) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = cs.errorContainer)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Permissions Required", style = MaterialTheme.typography.titleMedium, color = cs.onErrorContainer)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Overlay and Storage permissions are needed.", style = MaterialTheme.typography.bodyMedium, color = cs.onErrorContainer)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        FilledTonalButton(onClick = onRequestPermissions, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Filled.Security, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Grant Permissions")
+                        }
+                    }
+                }
+            } else {
+                FilledTonalButton(onClick = onStartService, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                    Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Start Overlay", style = MaterialTheme.typography.titleMedium)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(onClick = onStopService, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                    Icon(Icons.Filled.Stop, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Stop Overlay", style = MaterialTheme.typography.titleMedium)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                TextButton(onClick = onTestShizuku) {
+                    Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Test Shizuku")
+                }
             }
         }
     }
