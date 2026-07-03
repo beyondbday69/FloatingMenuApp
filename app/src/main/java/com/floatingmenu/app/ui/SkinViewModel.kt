@@ -45,11 +45,7 @@ class SkinViewModel(application: Application) : AndroidViewModel(application) {
                     return@launch
                 }
 
-                // Restore indices from DataStore
-                val updatedItems = parsedItems.map { item ->
-                    val savedIndex = repository.getIndex(item.name)
-                    if (savedIndex != 0) item.copy(index = savedIndex) else item
-                }.filter { it.skinIds.size > 1 }
+                val updatedItems = parsedItems.filter { it.skinIds.size > 1 }
                 
                 val grouped = updatedItems.groupBy { it.category }
                 
@@ -80,6 +76,10 @@ class SkinViewModel(application: Application) : AndroidViewModel(application) {
                 
                 val current = _uiState.value
                 if (current is SkinUiState.Success) {
+                    // Write config.ini for realtime lua apply
+                    val allItems = current.itemsByCategory.values.flatten()
+                    repository.writeConfigIni(allItems)
+                    
                     val skinId = item.skinIds.getOrNull(newIndex) ?: ""
                     val skinName = current.dumpMap[skinId] ?: "Unknown Skin"
                     onComplete("Applied: $skinName")

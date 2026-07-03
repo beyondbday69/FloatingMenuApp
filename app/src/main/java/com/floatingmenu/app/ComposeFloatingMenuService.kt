@@ -470,7 +470,7 @@ fun SkinsContent(viewModel: SkinViewModel, onToast: (String) -> Unit, onLongPres
 // ───────────────────────────────────────────────────────────────────
 // SKIN ITEM ROW — Dropdown style
 // ───────────────────────────────────────────────────────────────────
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SkinItemRow(
     item: MatchedItem,
@@ -482,11 +482,12 @@ fun SkinItemRow(
     val cs = MaterialTheme.colorScheme
     val currentSkinId = item.skinIds.getOrNull(item.index) ?: ""
     val currentSkinName = dumpMap[currentSkinId] ?: currentSkinId
+    var expanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .height(56.dp)
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -503,40 +504,57 @@ fun SkinItemRow(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Arrow Selector
-        Row(
-            modifier = Modifier.weight(1f).height(36.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        // Working Dropdown Selector
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.weight(1f)
         ) {
-            IconButton(
-                onClick = {
-                    val newIndex = if (item.index > 0) item.index - 1 else item.skinIds.size - 1
-                    viewModel.updateIndex(item, newIndex, onToast)
-                },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(Icons.Filled.KeyboardArrowLeft, contentDescription = "Previous", tint = cs.primary)
-            }
-            
-            Text(
-                text = currentSkinName,
-                style = MaterialTheme.typography.bodySmall,
-                color = cs.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            OutlinedTextField(
+                value = currentSkinName,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodySmall.copy(color = cs.onSurfaceVariant),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = cs.surfaceContainerHighest,
+                    unfocusedContainerColor = cs.surfaceContainerHighest,
+                    focusedBorderColor = cs.primary,
+                    unfocusedBorderColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+                    .height(48.dp)
             )
-            
-            IconButton(
-                onClick = {
-                    val newIndex = if (item.index < item.skinIds.size - 1) item.index + 1 else 0
-                    viewModel.updateIndex(item, newIndex, onToast)
-                },
-                modifier = Modifier.size(32.dp)
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(cs.surfaceContainerHighest)
             ) {
-                Icon(Icons.Filled.KeyboardArrowRight, contentDescription = "Next", tint = cs.primary)
+                item.skinIds.forEachIndexed { idx, skinId ->
+                    val skinName = dumpMap[skinId] ?: skinId
+                    val isSelected = idx == item.index
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = skinName,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) cs.primary else cs.onSurface
+                            )
+                        },
+                        onClick = {
+                            viewModel.updateIndex(item, idx, onToast)
+                            expanded = false
+                        },
+                        trailingIcon = if (isSelected) {
+                            { Icon(Icons.Filled.Check, contentDescription = null, tint = cs.primary, modifier = Modifier.size(16.dp)) }
+                        } else null
+                    )
+                }
             }
         }
     }

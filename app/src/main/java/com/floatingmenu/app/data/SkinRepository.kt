@@ -228,6 +228,25 @@ class SkinRepository(private val context: Context) {
         }
     }
 
+    suspend fun writeConfigIni(items: List<MatchedItem>) = withContext(Dispatchers.IO) {
+        val builder = java.lang.StringBuilder()
+        for (item in items) {
+            val skinId = item.skinIds.getOrNull(item.index)
+            if (skinId != null) {
+                // Ensure spaces are removed from names to match config.ini format expected by Lua
+                val cleanName = item.name.replace(" ", "")
+                builder.append("$cleanName=$skinId\n")
+            }
+        }
+        val tempFile = File(context.getExternalFilesDir(null), "config.ini.tmp")
+        tempFile.writeText(builder.toString())
+        
+        val configPath = "/storage/emulated/0/Android/data/com.pubg.imobile/files/config.ini"
+        val cmd = "cp '${tempFile.absolutePath}' '$configPath'"
+        val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+        process.waitFor()
+    }
+
     private fun classify(name: String): String {
         val lowerName = name.lowercase()
         if (lowerName.matches(Regex("^x[-_]?suit.*"))) return "XSuits"
