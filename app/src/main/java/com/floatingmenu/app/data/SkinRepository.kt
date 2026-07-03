@@ -179,10 +179,20 @@ class SkinRepository(private val context: Context) {
 
         content.lines().forEachIndexed { index, rawLine ->
             // Skip the very last empty line split by .lines() if it's an artificial trailing newline
-            if (index == content.lines().size - 1 && rawLine.isEmpty()) return@forEachIndexed
+            if (index == content.lines().size - 1 && rawLine.isEmpty()) {
+                if (inSelected && !written) {
+                    builder.append("$name=$value\n")
+                    written = true
+                }
+                return@forEachIndexed
+            }
 
             val trimmed = rawLine.trim()
             if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                if (inSelected && !written) {
+                    builder.append("$name=$value\n")
+                    written = true
+                }
                 inSelected = (trimmed == "[SELECTED]")
                 builder.append(rawLine).append("\n")
                 return@forEachIndexed
@@ -200,6 +210,11 @@ class SkinRepository(private val context: Context) {
                 }
             }
             builder.append(rawLine).append("\n")
+        }
+        
+        if (inSelected && !written) {
+            builder.append("$name=$value\n")
+            written = true
         }
         
         if (written) {
