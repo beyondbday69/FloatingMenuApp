@@ -76,10 +76,6 @@ class SkinViewModel(application: Application) : AndroidViewModel(application) {
                 
                 val current = _uiState.value
                 if (current is SkinUiState.Success) {
-                    // Write config.ini for realtime lua apply
-                    val allItems = current.itemsByCategory.values.flatten()
-                    repository.writeConfigIni(allItems)
-                    
                     val skinId = item.skinIds.getOrNull(newIndex) ?: ""
                     val skinName = current.dumpMap[skinId] ?: "Unknown Skin"
                     onComplete("Applied: $skinName")
