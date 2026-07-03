@@ -379,8 +379,9 @@ fun FloatingApp(
                         }
                 )
             }
+            }
         }
-
+        
         // ─── BOTTOM SHEET FOR SKIN PICKER ───
         if (showSheetForItem != null) {
             SkinPickerSheet(viewModel, showSheetForItem!!, onToast) { showSheetForItem = null }
