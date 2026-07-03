@@ -246,6 +246,16 @@ fun FloatingApp(
     var isExpanded by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableIntStateOf(0) }
     var showSheetForItem by remember { mutableStateOf<MatchedItem?>(null) }
+    
+    var windowWidth by remember { mutableStateOf(340.dp) }
+    var windowHeight by remember { mutableStateOf(380.dp) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+
+    LaunchedEffect(Unit) {
+        val (w, h) = viewModel.getWindowSize()
+        windowWidth = w.dp
+        windowHeight = h.dp
+    }
 
     val cs = MaterialTheme.colorScheme
 
@@ -271,12 +281,13 @@ fun FloatingApp(
         } else {
             // ─── MAIN WINDOW ───
             Card(
-                modifier = Modifier.width(340.dp).height(380.dp),
+                modifier = Modifier.width(windowWidth).height(windowHeight),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = cs.surfaceContainer),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.fillMaxSize()) {
                     // ─── DRAG HEADER ───
                     Surface(
                         color = cs.surfaceContainerHigh,
@@ -341,6 +352,32 @@ fun FloatingApp(
                         }
                     }
                 }
+
+                // ─── RESIZE HANDLE ───
+                Icon(
+                    imageVector = Icons.Filled.OpenInFull,
+                    contentDescription = "Resize",
+                    tint = cs.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 68.dp, end = 8.dp) // Offset above navigation bar
+                        .size(20.dp)
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragEnd = {
+                                    viewModel.saveWindowSize(windowWidth.value.toInt(), windowHeight.value.toInt())
+                                }
+                            ) { change, dragAmount ->
+                                change.consume()
+                                with(density) {
+                                    val newW = (windowWidth.toPx() + dragAmount.x).toDp()
+                                    val newH = (windowHeight.toPx() + dragAmount.y).toDp()
+                                    windowWidth = newW.coerceIn(280.dp, 600.dp)
+                                    windowHeight = newH.coerceIn(300.dp, 800.dp)
+                                }
+                            }
+                        }
+                )
             }
         }
 
