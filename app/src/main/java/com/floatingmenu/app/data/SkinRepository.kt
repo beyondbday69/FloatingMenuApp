@@ -124,6 +124,7 @@ class SkinRepository(private val context: Context) {
 
     suspend fun parseIni(): List<MatchedItem> = withContext(Dispatchers.IO) {
         val content = readWithShizuku(INI_PATH)
+        val dumpMap = loadDump()
         
         val selectedMap = mutableMapOf<String, Int>()
         val skinListMap = mutableMapOf<String, List<String>>()
@@ -145,7 +146,10 @@ class SkinRepository(private val context: Context) {
                 if (line.contains("=") && !line.startsWith("#")) {
                     val parts = line.split("=", limit = 2)
                     if (parts.size == 2) {
-                        val skinName = parts[0].trim()
+                        val rawSkinName = parts[0].trim()
+                        // Map the raw skin name (e.g., 101004) to its real name (e.g., M416) using dumpMap.
+                        // If not found in dumpMap, use the raw name itself (like Suit or Bag).
+                        val skinName = dumpMap[rawSkinName] ?: rawSkinName
                         val ids = parts[1].split(",").map { it.trim() }
                         skinListMap[skinName] = ids
                     }
