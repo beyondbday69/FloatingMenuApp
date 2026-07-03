@@ -470,7 +470,7 @@ fun SkinsContent(viewModel: SkinViewModel, onToast: (String) -> Unit, onLongPres
 // ───────────────────────────────────────────────────────────────────
 // SKIN ITEM ROW — Dropdown style
 // ───────────────────────────────────────────────────────────────────
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SkinItemRow(
     item: MatchedItem,
@@ -504,36 +504,38 @@ fun SkinItemRow(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Working Dropdown Selector
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedTextField(
-                value = currentSkinName,
-                onValueChange = {},
-                readOnly = true,
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodySmall.copy(color = cs.onSurfaceVariant),
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = cs.surfaceContainerHighest,
-                    unfocusedContainerColor = cs.surfaceContainerHighest,
-                    focusedBorderColor = cs.primary,
-                    unfocusedBorderColor = Color.Transparent
-                ),
+        // Lightweight Dropdown Selector
+        Box(modifier = Modifier.weight(1f)) {
+            Surface(
+                color = cs.surfaceContainerHighest,
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
-                    .menuAnchor()
                     .fillMaxWidth()
                     .height(48.dp)
-            )
+                    .clickable { expanded = true }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = currentSkinName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = cs.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = cs.onSurfaceVariant)
+                }
+            }
 
-            ExposedDropdownMenu(
+            DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                modifier = Modifier.background(cs.surfaceContainerHighest)
+                modifier = Modifier
+                    .background(cs.surfaceContainerHighest)
+                    .heightIn(max = 280.dp)
             ) {
                 item.skinIds.forEachIndexed { idx, skinId ->
                     val skinName = dumpMap[skinId] ?: skinId
