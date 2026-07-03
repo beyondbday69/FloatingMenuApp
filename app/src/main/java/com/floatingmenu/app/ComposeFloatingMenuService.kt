@@ -482,7 +482,6 @@ fun SkinItemRow(
     val cs = MaterialTheme.colorScheme
     val currentSkinId = item.skinIds.getOrNull(item.index) ?: ""
     val currentSkinName = dumpMap[currentSkinId] ?: currentSkinId
-    var dropdownExpanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -504,57 +503,40 @@ fun SkinItemRow(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Dropdown Selector
-        Box(modifier = Modifier.weight(1f)) {
-            Surface(
-                color = cs.surfaceContainerHighest,
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(36.dp)
-                    .clickable { dropdownExpanded = true }
+        // Arrow Selector
+        Row(
+            modifier = Modifier.weight(1f).height(36.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(
+                onClick = {
+                    val newIndex = if (item.index > 0) item.index - 1 else item.skinIds.size - 1
+                    viewModel.updateIndex(item, newIndex, onToast)
+                },
+                modifier = Modifier.size(32.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = currentSkinName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = cs.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(Icons.Filled.UnfoldMore, contentDescription = null, tint = cs.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                }
+                Icon(Icons.Filled.KeyboardArrowLeft, contentDescription = "Previous", tint = cs.primary)
             }
-
-            DropdownMenu(
-                expanded = dropdownExpanded,
-                onDismissRequest = { dropdownExpanded = false },
-                modifier = Modifier
-                    .heightIn(max = 240.dp)
-                    .widthIn(min = 180.dp)
+            
+            Text(
+                text = currentSkinName,
+                style = MaterialTheme.typography.bodySmall,
+                color = cs.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            )
+            
+            IconButton(
+                onClick = {
+                    val newIndex = if (item.index < item.skinIds.size - 1) item.index + 1 else 0
+                    viewModel.updateIndex(item, newIndex, onToast)
+                },
+                modifier = Modifier.size(32.dp)
             ) {
-                item.skinIds.forEachIndexed { idx, skinId ->
-                    val skinName = dumpMap[skinId] ?: skinId
-                    val isSelected = idx == item.index
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                skinName,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) cs.primary else cs.onSurface
-                            )
-                        },
-                        onClick = {
-                            viewModel.updateIndex(item, idx, onToast)
-                            dropdownExpanded = false
-                        },
-                        leadingIcon = if (isSelected) {{ Icon(Icons.Filled.Check, contentDescription = null, tint = cs.primary, modifier = Modifier.size(16.dp)) }} else null
-                    )
-                }
+                Icon(Icons.Filled.KeyboardArrowRight, contentDescription = "Next", tint = cs.primary)
             }
         }
     }
