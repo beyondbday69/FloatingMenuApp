@@ -161,36 +161,59 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
                 val sukunaState by sukunaViewModel.uiState.collectAsState()
                 if (sukunaState.ESP_ON) {
                     val counterState by counterViewModel.uiState.collectAsState()
-                    MaterialTheme(colorScheme = darkColorScheme()) {
+                    MaterialTheme(
+                        colorScheme = darkColorScheme(
+                            primary = cs2Primary,
+                            surface = cs2Surface,
+                            background = cs2Background,
+                            onSurface = cs2Text,
+                            onSurfaceVariant = Color.Gray,
+                            surfaceContainer = cs2Background,
+                            surfaceContainerHigh = cs2Surface,
+                            outlineVariant = Color(0xFF3A3A3A)
+                        )
+                    ) {
                         Surface(
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                            modifier = Modifier.padding(8.dp)
+                            color = cs2Background.copy(alpha = 0.9f),
+                            shape = RoundedCornerShape(2.dp),
+                            border = BorderStroke(1.dp, Color(0xFF3A3A3A)),
+                            modifier = Modifier.padding(4.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("PLAYER", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                                    Text(
-                                        "${counterState.playerCount}", 
-                                        style = MaterialTheme.typography.titleLarge, 
-                                        color = if (counterState.playerCount > 0) Color.Red else MaterialTheme.colorScheme.onSurface,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                            Column {
+                                // Header
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.5f)
+                                        .background(cs2TitleBar)
+                                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("ESP INFO", style = MaterialTheme.typography.labelSmall, color = cs2Text, fontSize = 9.sp)
                                 }
-                                Box(modifier = Modifier.width(1.dp).height(30.dp).background(MaterialTheme.colorScheme.outlineVariant))
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("BOT", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
-                                    Text(
-                                        "${counterState.botCount}", 
-                                        style = MaterialTheme.typography.titleLarge, 
-                                        color = if (counterState.botCount > 0) Color(0xFFFFA500) else MaterialTheme.colorScheme.onSurface,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("PLAYER", style = MaterialTheme.typography.labelSmall, color = cs2Primary, fontSize = 10.sp)
+                                        Text(
+                                            "${counterState.playerCount}", 
+                                            style = MaterialTheme.typography.titleMedium, 
+                                            color = if (counterState.playerCount > 0) Color.Red else cs2Text,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color(0xFF3A3A3A)))
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("BOT", style = MaterialTheme.typography.labelSmall, color = Color(0xFFFFA500), fontSize = 10.sp)
+                                        Text(
+                                            "${counterState.botCount}", 
+                                            style = MaterialTheme.typography.titleMedium, 
+                                            color = if (counterState.botCount > 0) Color(0xFFFFA500) else cs2Text,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }

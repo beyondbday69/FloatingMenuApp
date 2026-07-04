@@ -136,10 +136,13 @@ fun M3Toggle(title: String, checked: Boolean, onToggle: () -> Unit) {
 
 @Composable
 fun M3Slider(title: String, value: Float, min: Float, max: Float, onValueChange: (Float) -> Unit) {
+    // Keep a precise local float state so dragging doesn't glitch due to integer rounding from caller
+    var internalValue by remember(value) { mutableFloatStateOf(value) }
+    
     Column(modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
-            Text("${value.toInt()}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            Text("${internalValue.toInt()}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         }
         Spacer(modifier = Modifier.height(4.dp))
         var width by remember { mutableStateOf(1f) }
@@ -153,19 +156,19 @@ fun M3Slider(title: String, value: Float, min: Float, max: Float, onValueChange:
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-                        val newValue = value + (dragAmount.x / width) * (max - min)
-                        onValueChange(newValue.coerceIn(min, max))
+                        internalValue = (internalValue + (dragAmount.x / width) * (max - min)).coerceIn(min, max)
+                        onValueChange(internalValue)
                     }
                 }
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
-                        val newValue = min + (offset.x / width) * (max - min)
-                        onValueChange(newValue.coerceIn(min, max))
+                        internalValue = (min + (offset.x / width) * (max - min)).coerceIn(min, max)
+                        onValueChange(internalValue)
                     }
                 },
             contentAlignment = Alignment.CenterStart
         ) {
-            val fraction = ((value - min) / (max - min)).coerceIn(0f, 1f)
+            val fraction = ((internalValue - min) / (max - min)).coerceIn(0f, 1f)
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
