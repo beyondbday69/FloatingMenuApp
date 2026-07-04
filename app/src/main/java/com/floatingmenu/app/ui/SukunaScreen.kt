@@ -97,9 +97,9 @@ fun SukunaContent(viewModel: SukunaViewModel, tab: String) {
 fun SectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(vertical = 6.dp)
+        modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)
     )
 }
 
@@ -108,24 +108,43 @@ fun M3Toggle(title: String, checked: Boolean, onToggle: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
             .clickable { onToggle() }
-            .padding(vertical = 6.dp),
+            .padding(vertical = 4.dp, horizontal = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-        Switch(checked = checked, onCheckedChange = { onToggle() })
+        Text(title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+        // ImGui Style Checkbox
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .background(if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(2.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(2.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (checked) {
+                Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+            }
+        }
     }
 }
 
 @Composable
 fun M3Slider(title: String, value: Float, min: Float, max: Float, onValueChange: (Float) -> Unit) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+    Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 2.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-            Text("${value.toInt()}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Text(title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+            Text("${value.toInt()}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         }
-        Slider(value = value, onValueChange = onValueChange, valueRange = min..max)
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = min..max,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+            )
+        )
     }
 }

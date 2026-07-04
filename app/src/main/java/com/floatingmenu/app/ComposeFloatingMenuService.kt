@@ -233,6 +233,15 @@ val tabs = listOf(
 )
 
 // ───────────────────────────────────────────────────────────────────
+// CS2 IMGUI THEME COLORS
+// ───────────────────────────────────────────────────────────────────
+val cs2Background = Color(0xFF1E1E1E)
+val cs2TitleBar = Color(0xFF2D2D2D)
+val cs2Primary = Color(0xFF3E79BD)
+val cs2Surface = Color(0xFF252526)
+val cs2Text = Color(0xFFE0E0E0)
+
+// ───────────────────────────────────────────────────────────────────
 // MAIN COMPOSABLE
 // ───────────────────────────────────────────────────────────────────
 @Composable
@@ -247,8 +256,8 @@ fun FloatingApp(
     var selectedTab by remember { mutableIntStateOf(0) }
     var showSheetForItem by remember { mutableStateOf<MatchedItem?>(null) }
     
-    var windowWidth by remember { mutableStateOf(340.dp) }
-    var windowHeight by remember { mutableStateOf(380.dp) }
+    var windowWidth by remember { mutableStateOf(380.dp) }
+    var windowHeight by remember { mutableStateOf(420.dp) }
     val density = androidx.compose.ui.platform.LocalDensity.current
 
     LaunchedEffect(Unit) {
@@ -257,18 +266,16 @@ fun FloatingApp(
         windowHeight = h.dp
     }
 
-    val cs = MaterialTheme.colorScheme
-
     Box(modifier = Modifier.wrapContentSize()) {
         if (!isExpanded) {
-            // ─── FAB PILL ───
-            FloatingActionButton(
+            // ─── FAB SQUARE ───
+            Surface(
                 onClick = { isExpanded = true },
-                containerColor = cs.primaryContainer,
-                contentColor = cs.onPrimaryContainer,
-                shape = CircleShape,
+                color = cs2Primary,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(4.dp),
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(48.dp)
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
@@ -276,98 +283,127 @@ fun FloatingApp(
                         }
                     }
             ) {
-                Icon(Icons.Filled.Gamepad, contentDescription = "Open", modifier = Modifier.size(28.dp))
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Open", modifier = Modifier.size(24.dp))
+                }
             }
         } else {
-            // ─── MAIN WINDOW ───
+            // ─── MAIN CS2 IMGUI WINDOW ───
             Card(
                 modifier = Modifier.width(windowWidth).height(windowHeight),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = cs.surfaceContainer),
+                shape = RoundedCornerShape(0.dp),
+                colors = CardDefaults.cardColors(containerColor = cs2Background),
+                border = BorderStroke(1.dp, Color(0xFF3A3A3A)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                    // ─── DRAG HEADER ───
-                    Surface(
-                        color = cs.surfaceContainerHigh,
-                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(44.dp)
-                                .pointerInput(Unit) {
-                                    detectDragGestures { change, dragAmount ->
-                                        change.consume()
-                                        onDrag(dragAmount.x, dragAmount.y)
+                        // ─── TITLE BAR ───
+                        Surface(
+                            color = cs2TitleBar,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(32.dp)
+                                    .pointerInput(Unit) {
+                                        detectDragGestures { change, dragAmount ->
+                                            change.consume()
+                                            onDrag(dragAmount.x, dragAmount.y)
+                                        }
+                                    }
+                                    .padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("CS2 Cheat Menu", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = cs2Text)
+                                Spacer(modifier = Modifier.weight(1f))
+                                IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Filled.Remove, contentDescription = "Minimize", tint = cs2Text, modifier = Modifier.size(16.dp))
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                                IconButton(onClick = { onClose() }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Close", tint = cs2Text, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+
+                        // ─── TABS BAR ───
+                        Surface(
+                            color = cs2Background,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 4.dp, vertical = 4.dp)
+                                    .background(cs2Surface, RoundedCornerShape(2.dp))
+                            ) {
+                                tabs.forEachIndexed { index, tab ->
+                                    val isSelected = selectedTab == index
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable { selectedTab = index }
+                                            .background(if (isSelected) cs2Primary else Color.Transparent, RoundedCornerShape(2.dp))
+                                            .padding(vertical = 6.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            tab.label,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSelected) Color.White else Color.Gray
+                                        )
                                     }
                                 }
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Filled.DragIndicator, contentDescription = null, tint = cs.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("MOD V1", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = cs.onSurface)
-                            Spacer(modifier = Modifier.weight(1f))
-                            IconButton(onClick = { viewModel.loadData(); sukunaViewModel.loadData() }, modifier = Modifier.size(32.dp)) {
-                                Icon(Icons.Filled.Refresh, contentDescription = "Reload", tint = cs.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                            }
-                            IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(32.dp)) {
-                                Icon(Icons.Filled.Remove, contentDescription = "Minimize", tint = cs.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                            }
-                            IconButton(onClick = { onClose() }, modifier = Modifier.size(32.dp)) {
-                                Icon(Icons.Filled.Close, contentDescription = "Close", tint = cs.onSurfaceVariant, modifier = Modifier.size(18.dp))
                             }
                         }
-                    }
+                        Divider(color = Color(0xFF3A3A3A), thickness = 1.dp)
 
-                    // ─── CONTENT AREA ───
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                        val currentTab = tabs[selectedTab]
-                        when (currentTab.label) {
-                            "ESP" -> SukunaContent(sukunaViewModel, "ESP")
-                            "LOOT" -> SukunaContent(sukunaViewModel, "LOOT")
-                            "VISUALS" -> SukunaContent(sukunaViewModel, "VISUALS")
-                            "MISC" -> SukunaContent(sukunaViewModel, "MISC")
-                            "SKINS" -> SkinsContent(viewModel, onToast) { showSheetForItem = it }
-                        }
-                    }
-
-                    // ─── BOTTOM NAV (M3 NavigationBar) ───
-                    NavigationBar(
-                        containerColor = cs.surfaceContainerHigh,
-                        tonalElevation = 0.dp,
-                        modifier = Modifier.height(64.dp)
-                    ) {
-                        tabs.forEachIndexed { index, tab ->
-                            NavigationBarItem(
-                                selected = selectedTab == index,
-                                onClick = { selectedTab = index },
-                                icon = { Icon(if (selectedTab == index) tab.icon else tab.outlinedIcon, contentDescription = tab.label, modifier = Modifier.size(22.dp)) },
-                                label = { Text(tab.label, fontSize = 10.sp, maxLines = 1) },
-                                alwaysShowLabel = true
-                            )
-                        }
-                    }
-                }
-
-                // ─── RESIZE HANDLE ───
-                Icon(
-                    imageVector = Icons.Filled.OpenInFull,
-                    contentDescription = "Resize",
-                    tint = cs.onSurfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(bottom = 68.dp, end = 8.dp) // Offset above navigation bar
-                        .size(20.dp)
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragEnd = {
-                                    viewModel.saveWindowSize(windowWidth.value.toInt(), windowHeight.value.toInt())
+                        // ─── CONTENT AREA ───
+                        Box(modifier = Modifier.weight(1f).fillMaxWidth().padding(4.dp)) {
+                            // Provide our custom colors down the tree using CompositionLocal or just wrapping MaterialTheme
+                            MaterialTheme(
+                                colorScheme = darkColorScheme(
+                                    primary = cs2Primary,
+                                    surface = cs2Surface,
+                                    background = cs2Background,
+                                    onSurface = cs2Text,
+                                    onSurfaceVariant = Color.Gray,
+                                    surfaceContainer = cs2Background,
+                                    surfaceContainerHigh = cs2Surface,
+                                    surfaceContainerHighest = Color(0xFF303030),
+                                    outlineVariant = Color(0xFF3A3A3A)
+                                )
+                            ) {
+                                val currentTab = tabs[selectedTab]
+                                when (currentTab.label) {
+                                    "ESP" -> SukunaContent(sukunaViewModel, "ESP")
+                                    "LOOT" -> SukunaContent(sukunaViewModel, "LOOT")
+                                    "VISUALS" -> SukunaContent(sukunaViewModel, "VISUALS")
+                                    "MISC" -> SukunaContent(sukunaViewModel, "MISC")
+                                    "SKINS" -> SkinsContent(viewModel, onToast) { showSheetForItem = it }
                                 }
-                            ) { change, dragAmount ->
+                            }
+                        }
+                    }
+
+                    // ─── RESIZE HANDLE ───
+                    Icon(
+                        imageVector = Icons.Filled.OpenInFull,
+                        contentDescription = "Resize",
+                        tint = Color.Gray.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(bottom = 8.dp, end = 8.dp)
+                            .size(16.dp)
+                            .pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDragEnd = {
+                                        viewModel.saveWindowSize(windowWidth.value.toInt(), windowHeight.value.toInt())
+                                    }
+                                ) { change, dragAmount ->
                                 change.consume()
                                 with(density) {
                                     val newW = (windowWidth.toPx() + dragAmount.x).toDp()
