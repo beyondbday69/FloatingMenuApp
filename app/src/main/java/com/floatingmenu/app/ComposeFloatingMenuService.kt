@@ -447,7 +447,7 @@ fun SkinsContent(viewModel: SkinViewModel, onToast: (String) -> Unit, onLongPres
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Shizuku not working", style = MaterialTheme.typography.bodyMedium, color = cs.error, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(12.dp))
-                    FilledTonalButton(onClick = { viewModel.loadData() }) {
+                    FilledTonalButton(onClick = { viewModel.loadData() }, shape = RoundedCornerShape(2.dp)) {
                         Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Retry")
@@ -460,7 +460,7 @@ fun SkinsContent(viewModel: SkinViewModel, onToast: (String) -> Unit, onLongPres
             val expandedCats = remember { mutableStateMapOf<String, Boolean>() }
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp),
+                modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 state.itemsByCategory.forEach { (category, items) ->
@@ -469,14 +469,14 @@ fun SkinsContent(viewModel: SkinViewModel, onToast: (String) -> Unit, onLongPres
                         val isExpanded = expandedCats[category] ?: true
                         Surface(
                             color = cs.surfaceContainerHighest,
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(2.dp),
                             modifier = Modifier.fillMaxWidth().clickable { expandedCats[category] = !isExpanded }
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(category, style = MaterialTheme.typography.labelLarge, color = cs.primary, fontWeight = FontWeight.Bold)
+                                Text(category, style = MaterialTheme.typography.labelMedium, color = cs.primary, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("(${items.size})", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
                                 Spacer(modifier = Modifier.weight(1f))
@@ -484,7 +484,7 @@ fun SkinsContent(viewModel: SkinViewModel, onToast: (String) -> Unit, onLongPres
                                     if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                                     contentDescription = null,
                                     tint = cs.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
@@ -523,35 +523,34 @@ fun SkinItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = 4.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Item name
         Text(
             text = item.name,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodySmall,
             color = cs.onSurface,
-            modifier = Modifier.width(80.dp),
+            modifier = Modifier.width(90.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
         // Lightweight Dropdown Selector
         Box(modifier = Modifier.weight(1f)) {
             Surface(
                 color = cs.surfaceContainerHighest,
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(2.dp),
+                border = BorderStroke(1.dp, cs.outlineVariant),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(28.dp)
                     .clickable { expanded = true }
             ) {
                 Row(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -562,7 +561,7 @@ fun SkinItemRow(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = cs.onSurfaceVariant)
+                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = cs.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
             }
 
@@ -571,7 +570,8 @@ fun SkinItemRow(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier
                     .background(cs.surfaceContainerHighest)
-                    .heightIn(max = 280.dp)
+                    .border(1.dp, cs.outlineVariant, RoundedCornerShape(2.dp))
+                    .heightIn(max = 200.dp)
             ) {
                 item.skinIds.forEachIndexed { idx, skinId ->
                     val skinName = dumpMap[skinId] ?: skinId
@@ -580,6 +580,7 @@ fun SkinItemRow(
                         text = {
                             Text(
                                 text = skinName,
+                                fontSize = 11.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isSelected) cs.primary else cs.onSurface
                             )

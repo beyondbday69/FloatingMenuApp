@@ -3,6 +3,8 @@ package com.floatingmenu.app.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -132,20 +136,42 @@ fun M3Toggle(title: String, checked: Boolean, onToggle: () -> Unit) {
 
 @Composable
 fun M3Slider(title: String, value: Float, min: Float, max: Float, onValueChange: (Float) -> Unit) {
-    Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 2.dp)) {
+    Column(modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
             Text("${value.toInt()}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         }
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = min..max,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        Spacer(modifier = Modifier.height(4.dp))
+        var width by remember { mutableStateOf(1f) }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(14.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(2.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(2.dp))
+                .onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        val newValue = value + (dragAmount.x / width) * (max - min)
+                        onValueChange(newValue.coerceIn(min, max))
+                    }
+                }
+                .pointerInput(Unit) {
+                    detectTapGestures { offset ->
+                        val newValue = min + (offset.x / width) * (max - min)
+                        onValueChange(newValue.coerceIn(min, max))
+                    }
+                },
+            contentAlignment = Alignment.CenterStart
+        ) {
+            val fraction = ((value - min) / (max - min)).coerceIn(0f, 1f)
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
             )
-        )
+        }
     }
 }
