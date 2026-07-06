@@ -191,7 +191,7 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
                                     Text("ESP INFO", style = MaterialTheme.typography.labelSmall, color = cs2Text, fontSize = 9.sp)
                                 }
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 6.dp),
                                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
