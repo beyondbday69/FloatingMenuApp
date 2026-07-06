@@ -163,8 +163,8 @@ class SkinRepository(private val context: Context) {
             if (selectedMap.containsKey(name)) {
                 idx = selectedMap[name] ?: 0
             } else {
-                val fuzzyName = name.replace(" ", "").lowercase()
-                val matchKey = selectedMap.keys.find { it.replace(" ", "").lowercase() == fuzzyName }
+                val fuzzyName = name.replace(" ", "").replace("-", "").lowercase()
+                val matchKey = selectedMap.keys.find { it.replace(" ", "").replace("-", "").lowercase() == fuzzyName }
                 if (matchKey != null) {
                     idx = selectedMap[matchKey] ?: 0
                 }
@@ -205,8 +205,8 @@ class SkinRepository(private val context: Context) {
             if (inSelected && trimmed.contains("=")) {
                 val parts = trimmed.split("=", limit = 2)
                 val key = parts[0].trim()
-                val fuzzyKey = key.replace(" ", "").lowercase()
-                val fuzzyName = name.replace(" ", "").lowercase()
+                val fuzzyKey = key.replace(" ", "").replace("-", "").lowercase()
+                val fuzzyName = name.replace(" ", "").replace("-", "").lowercase()
                 if (fuzzyKey == fuzzyName) {
                     builder.append("$key=$value\n")
                     written = true
