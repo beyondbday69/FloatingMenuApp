@@ -179,11 +179,11 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
                             border = BorderStroke(1.dp, Color(0xFF3A3A3A)),
                             modifier = Modifier.padding(4.dp)
                         ) {
-                            Column {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 // Header
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(0.5f)
+                                        .fillMaxWidth()
                                         .background(cs2TitleBar)
                                         .padding(horizontal = 4.dp, vertical = 2.dp),
                                     contentAlignment = Alignment.Center
