@@ -79,6 +79,9 @@ class SkinViewModel(application: Application) : AndroidViewModel(application) {
                     val skinId = item.skinIds.getOrNull(newIndex) ?: ""
                     val skinName = current.dumpMap[skinId] ?: "Unknown Skin"
                     onComplete("Applied: $skinName")
+                    com.floatingmenu.app.NotificationHelper.notifySkinApplied(
+                        getApplication(), item.name, skinName
+                    )
                 }
             } catch (e: Exception) {
                 onComplete("Error: ${e.message}")

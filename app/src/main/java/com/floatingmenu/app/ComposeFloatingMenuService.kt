@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Toast
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -64,6 +65,8 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
     private lateinit var viewModel: SkinViewModel
     private lateinit var sukunaViewModel: SukunaViewModel
     private lateinit var counterViewModel: CounterViewModel
+    private val serviceScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.SupervisorJob())
+    private var playerAlertSent = false
 
     override fun onCreate() {
         super.onCreate()
@@ -74,6 +77,8 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
         viewModel = ViewModelProvider(this, factory)[SkinViewModel::class.java]
         sukunaViewModel = ViewModelProvider(this, factory)[SukunaViewModel::class.java]
         counterViewModel = ViewModelProvider(this, factory)[CounterViewModel::class.java]
+
+        NotificationHelper.createChannels(this)
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -222,6 +227,18 @@ class ComposeFloatingMenuService : Service(), LifecycleOwner, ViewModelStoreOwne
             }
         }
         windowManager.addView(counterView, counterParams)
+
+        // Monitor player count for ESP alert notifications
+        serviceScope.launch {
+            counterViewModel.uiState.collect { state ->
+                if (state.playerCount > 5 && !playerAlertSent) {
+                    playerAlertSent = true
+                    NotificationHelper.notifyPlayerAlert(this@ComposeFloatingMenuService, state.playerCount)
+                } else if (state.playerCount <= 5) {
+                    playerAlertSent = false
+                }
+            }
+        }
 
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
