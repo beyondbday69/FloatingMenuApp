@@ -93,6 +93,30 @@ fun SukunaContent(viewModel: SukunaViewModel, tab: String) {
             "MISC" -> {
                 item { SectionHeader("Combat") }
                 item { M3Slider("Magic Bullet %", state.MagicBullet.toFloat(), 0f, 100f) { v -> viewModel.updateState { it.copy(MagicBullet = v.toInt()) } } }
+                item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+                item { SectionHeader("Notifications") }
+                item {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        androidx.compose.material3.FilledTonalButton(
+                            onClick = { com.floatingmenu.app.NotificationHelper.notifySkinApplied(context, "M416", "Glacier") },
+                            shape = RoundedCornerShape(2.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Test Skin", fontSize = 11.sp)
+                        }
+                        androidx.compose.material3.FilledTonalButton(
+                            onClick = { com.floatingmenu.app.NotificationHelper.notifyPlayerAlert(context, 8) },
+                            shape = RoundedCornerShape(2.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Test ESP", fontSize = 11.sp)
+                        }
+                    }
+                }
             }
         }
     }
