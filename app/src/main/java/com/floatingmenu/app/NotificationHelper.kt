@@ -21,9 +21,10 @@ object NotificationHelper {
             val skinChannel = NotificationChannel(
                 CHANNEL_SKIN,
                 "Skin Changes",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = "Notifications when skins are applied"
+                enableVibration(true)
             }
 
             val espChannel = NotificationChannel(
@@ -45,6 +46,7 @@ object NotificationHelper {
             .setSmallIcon(android.R.drawable.ic_menu_edit)
             .setContentTitle("Skin Applied ✓")
             .setContentText("$weaponName → $skinName")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
 
